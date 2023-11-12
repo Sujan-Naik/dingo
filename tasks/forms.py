@@ -4,6 +4,40 @@ from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
 from .models import User
 
+class TeamCreateForm(forms.Form):
+    """Form enabling users to create a password."""
+
+    name = forms.CharField(label='New team name', widget=forms.PasswordInput())
+
+    def __init__(self, user=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+
+        super().clean()
+        password = self.cleaned_data.get('password')
+        if self.user is not None:
+            user = authenticate(username=self.user.username, password=password)
+        else:
+            user = None
+        if user is None:
+            self.add_error('password', "Password is invalid")
+
+    def save(self):
+        """Save the user's new password."""
+
+        # new_password = self.cleaned_data['new_password']
+        # if self.user is not None:
+        #     self.user.set_password(new_password)
+        #     self.user.save()
+        return self.user
+
+
+
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
 
@@ -108,3 +142,4 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
             password=self.cleaned_data.get('new_password'),
         )
         return user
+

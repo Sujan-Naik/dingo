@@ -8,8 +8,36 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, TeamCreateForm
 from tasks.helpers import login_prohibited
+
+
+class team(LoginRequiredMixin, FormView):
+    """Display password change screen and handle password change requests."""
+
+    template_name = 'team.html'
+    form_class = TeamCreateForm
+
+    def get_form_kwargs(self, **kwargs):
+        """Pass the current user to the password change form."""
+
+        kwargs = super().get_form_kwargs(**kwargs)
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_valid(self, form):
+        """Handle valid form by saving the new password."""
+
+        form.save()
+        login(self.request, self.request.user)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        """Redirect the user after successful password change."""
+
+        messages.add_message(self.request, messages.SUCCESS, "team updated!")
+        return reverse('dashboard')
+
 
 
 @login_required
@@ -151,3 +179,4 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
