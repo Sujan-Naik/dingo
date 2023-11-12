@@ -16,7 +16,8 @@ class User(AbstractUser):
     )
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
-    email = models.EmailField(primary_key=True,unique=True, blank=False)
+    email = models.EmailField(unique=True, blank=False)
+
 
 
     class Meta:
@@ -43,6 +44,6 @@ class User(AbstractUser):
 
 
 class Team(models.Model):
-
+    """Model used to represent a team, namely its name and members"""
     team_name = models.CharField(max_length=50,unique=True, blank=False)
     team_members = models.ForeignKey(User, on_delete=models.PROTECT, blank=False)

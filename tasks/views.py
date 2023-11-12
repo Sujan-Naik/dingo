@@ -13,13 +13,13 @@ from tasks.helpers import login_prohibited
 
 
 class team(LoginRequiredMixin, FormView):
-    """Display password change screen and handle password change requests."""
+    """Allow logged in users to create new teams"""
 
     template_name = 'team.html'
     form_class = TeamCreateForm
 
     def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the password change form."""
+        """Pass the current user to the team create form."""
 
         kwargs = super().get_form_kwargs(**kwargs)
         kwargs.update({'user': self.request.user})
@@ -35,7 +35,7 @@ class team(LoginRequiredMixin, FormView):
     def get_success_url(self):
         """Redirect the user after successful password change."""
 
-        messages.add_message(self.request, messages.SUCCESS, "team updated!")
+        messages.add_message(self.request, messages.SUCCESS, "team created!")
         return reverse('dashboard')
 
 

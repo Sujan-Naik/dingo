@@ -5,6 +5,10 @@
     <div class="col-12">
       <h1>Welcome to your dashboard {{ user.username }}</h1>
     </div>
+    <button type="button">
+        <a href="{% url 'team' %}">Go to the team page!</a>
+    </button>
+
   </div>
 </div>
 {% endblock %}
