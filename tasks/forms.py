@@ -117,11 +117,17 @@ class CreateTaskForm(forms.ModelForm):
         model = Task
         fields = ['name', 'description']
 
+    def __init__(self, user=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+
     def save(self):
         """Create a new task."""
         super().save(commit=False)
         task_name = self.cleaned_data.get("name")
         task_description = self.cleaned_data.get("description")
-        task = Task(name=task_name, description=task_description)
-        task.save() #test this
+        task = Task(name=task_name, description=task_description, author=self.user)
+        task.save()
         return task

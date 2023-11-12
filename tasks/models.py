@@ -47,7 +47,7 @@ class Task(models.Model):
 
     name = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=5000, blank=False)
-    #author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
