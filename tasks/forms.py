@@ -2,7 +2,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User
+from .models import User, Task
 
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
@@ -108,3 +108,20 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
             password=self.cleaned_data.get('new_password'),
         )
         return user
+
+
+class CreateTaskForm(forms.ModelForm):
+    """Form enabling registered users to create tasks."""
+    class Meta:
+        """Form options."""
+        model = Task
+        fields = ['name', 'description']
+
+    def save(self):
+        """Create a new task."""
+        super().save(commit=False)
+        task_name = self.cleaned_data.get("name")
+        task_description = self.cleaned_data.get("description")
+        task = Task(name=task_name, description=task_description)
+        task.save() #test this
+        return task

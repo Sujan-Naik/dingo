@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm
 from tasks.helpers import login_prohibited
 
 
@@ -147,6 +147,25 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def form_valid(self, form):
         self.object = form.save()
         login(self.request, self.object)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+
+class CreateTaskView(FormView):
+
+    """Display the create task screen and handle creating tasks."""
+
+    model = CreateTaskForm
+    form_class = CreateTaskForm
+    template_name = "create_task.html"
+    redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
+
+    def form_valid(self, form):
+        #self.object = form.save()
+        form.save()
+        print('form.save()')
         return super().form_valid(form)
 
     def get_success_url(self):
