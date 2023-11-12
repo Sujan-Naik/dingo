@@ -111,11 +111,18 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 
 class CreateTaskForm(forms.ModelForm):
+
     """Form enabling registered users to create tasks."""
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'deadline']
+        widgets = {
+            'deadline': forms.DateTimeInput(attrs = {
+                'class': 'form-control',
+                'type': 'datetime-local'
+            })
+        }
 
     def __init__(self, user=None, **kwargs):
         """Construct new form instance with a user instance."""
@@ -128,6 +135,7 @@ class CreateTaskForm(forms.ModelForm):
         super().save(commit=False)
         task_name = self.cleaned_data.get("name")
         task_description = self.cleaned_data.get("description")
-        task = Task(name=task_name, description=task_description, author=self.user)
+        task_deadline = self.cleaned_data.get("deadline")
+        task = Task(name=task_name, description=task_description, deadline=task_deadline, author=self.user)
         task.save()
         return task
