@@ -2,46 +2,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
-from .models import User, Team
-
-
-class TeamCreateForm(forms.Form):
-    """Form enabling users to create a password."""
-
-    team_name = forms.CharField(label='New team name', widget=forms.PasswordInput())
-
-    def __init__(self, user=None, **kwargs):
-        """Construct new form instance with a user instance."""
-
-        super().__init__(**kwargs)
-        self.user = user
-
-    def clean(self):
-        """Clean the data and generate messages for any errors."""
-
-        super().clean()
-
-
-    def save(self):
-        """Save the user's new password."""
-
-        # new_password = self.cleaned_data['new_password']
-        # if self.user is not None:
-        #     self.user.set_password(new_password)
-        #     self.user.save()
-
-        # user = User.objects.create_user(
-        #     self.cleaned_data.get('username'),
-        #     first_name=self.cleaned_data.get('first_name'),
-        #     last_name=self.cleaned_data.get('last_name'),
-        #     email=self.cleaned_data.get('email'),
-        #     password=self.cleaned_data.get('new_password'),
-        # )
-
-        team = Team.objects.create(team_name=self.cleaned_data.get('team_name'), team_members=self.user)
-        return self.user
-
-
+from .models import User, Task, Team
 
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
@@ -148,3 +109,79 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         )
         return user
 
+class CreateTaskForm(forms.ModelForm):
+
+    """Form enabling registered users to create tasks."""
+    class Meta:
+        """Form options."""
+        model = Task
+        fields = ['name', 'description', 'deadline']
+        widgets = {
+            'deadline': forms.DateTimeInput(attrs = {
+                'class': 'form-control',
+                'type': 'datetime-local'
+            })
+        }
+
+    def __init__(self, user=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+
+    def clean(self):
+        """Clean the deadline datatime data and generate messages for any errors."""
+
+        super().clean()
+        deadline_datetime = self.cleaned_data.get('deadline')
+        """Sends error if deadline time has already passed"""
+        if deadline_datetime <= timezone.now():
+            self.add_error('deadline', "Deadline is invalid")
+        if self.user is None:
+            self.add_error(None, "You must be logged in first!")
+
+    def save(self):
+        """Create a new task."""
+        super().save(commit=False)
+        task_name = self.cleaned_data.get("name")
+        task_description = self.cleaned_data.get("description")
+        task_deadline = self.cleaned_data.get("deadline")
+        task = Task(name=task_name, description=task_description, deadline=task_deadline, author=self.user)
+        task.save()
+        return task
+
+class TeamCreateForm(forms.Form):
+    """Form enabling users to create a password."""
+
+    team_name = forms.CharField(label='New team name', widget=forms.PasswordInput())
+
+    def __init__(self, user=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+
+        super().clean()
+
+
+    def save(self):
+        """Save the user's new password."""
+
+        # new_password = self.cleaned_data['new_password']
+        # if self.user is not None:
+        #     self.user.set_password(new_password)
+        #     self.user.save()
+
+        # user = User.objects.create_user(
+        #     self.cleaned_data.get('username'),
+        #     first_name=self.cleaned_data.get('first_name'),
+        #     last_name=self.cleaned_data.get('last_name'),
+        #     email=self.cleaned_data.get('email'),
+        #     password=self.cleaned_data.get('new_password'),
+        # )
+
+        team = Team.objects.create(team_name=self.cleaned_data.get('team_name'), team_members=self.user)
+        return self.user

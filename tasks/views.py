@@ -8,36 +8,8 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, TeamCreateForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
-
-
-class team(LoginRequiredMixin, FormView):
-    """Allow logged in users to create new teams"""
-
-    template_name = 'team.html'
-    form_class = TeamCreateForm
-
-    def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the team create form."""
-
-        kwargs = super().get_form_kwargs(**kwargs)
-        kwargs.update({'user': self.request.user})
-        return kwargs
-
-    def form_valid(self, form):
-        """Handle valid form by saving the new password."""
-
-        form.save()
-        login(self.request, self.request.user)
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        """Redirect the user after successful password change."""
-
-        messages.add_message(self.request, messages.SUCCESS, "team created!")
-        return reverse('dashboard')
-
 
 
 @login_required
@@ -180,3 +152,52 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
+class CreateTaskView(FormView):
+
+    """Display the create task screen and handle creating tasks."""
+
+    model = CreateTaskForm
+    form_class = CreateTaskForm
+    template_name = "create_task.html"
+    redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
+
+    def get_form_kwargs(self, **kwargs):
+        """Pass the current user to the create task form."""
+
+        kwargs = super().get_form_kwargs(**kwargs)
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_valid(self, form):
+        #self.object = form.save()
+        form.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+class team(LoginRequiredMixin, FormView):
+    """Allow logged in users to create new teams"""
+
+    template_name = 'team.html'
+    form_class = TeamCreateForm
+
+    def get_form_kwargs(self, **kwargs):
+        """Pass the current user to the team create form."""
+
+        kwargs = super().get_form_kwargs(**kwargs)
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_valid(self, form):
+        """Handle valid form by saving the new password."""
+
+        form.save()
+        login(self.request, self.request.user)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        """Redirect the user after successful password change."""
+
+        messages.add_message(self.request, messages.SUCCESS, "team created!")
+        return reverse('dashboard')
