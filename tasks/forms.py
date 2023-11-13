@@ -139,6 +139,8 @@ class CreateTaskForm(forms.ModelForm):
         """Sends error if deadline time has already passed"""
         if deadline_datetime <= timezone.now():
             self.add_error('deadline', "Deadline is invalid")
+        if self.user is None:
+            self.add_error(None, "You must be logged in first!")
 
     def save(self):
         """Create a new task."""
