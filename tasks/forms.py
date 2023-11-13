@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
+from django.utils import timezone
 from .models import User, Task
 
 class LogInForm(forms.Form):
@@ -129,6 +130,15 @@ class CreateTaskForm(forms.ModelForm):
 
         super().__init__(**kwargs)
         self.user = user
+
+    def clean(self):
+        """Clean the deadline datatime data and generate messages for any errors."""
+
+        super().clean()
+        deadline_datetime = self.cleaned_data.get('deadline')
+        """Sends error if deadline time has already passed"""
+        if deadline_datetime <= timezone.now():
+            self.add_error('deadline', "Deadline is invalid")
 
     def save(self):
         """Create a new task."""
