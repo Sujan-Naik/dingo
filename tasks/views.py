@@ -4,12 +4,13 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
+from .models import Task
 
 
 @login_required
@@ -26,6 +27,15 @@ def home(request):
 
     return render(request, 'home.html')
 
+def task_list(request):
+    """Show the task list in the dashboard"""
+    tasks = Task.objects.filter(author=request.user)
+    return render(request, 'task_list.html', {'tasks': tasks})
+
+def task_detail(request,name):
+    """Show the task details in task list"""
+    task = get_object_or_404(Task, name=name)
+    return render(request, 'task_detail.html', {'task': task})
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
