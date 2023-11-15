@@ -1,0 +1,10 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+  <h2>My Tasks</h2>
+  <ul>
+    {% for task in tasks %}
+      <li><a href="{% url 'task_detail' task.name %}">{{ task.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
