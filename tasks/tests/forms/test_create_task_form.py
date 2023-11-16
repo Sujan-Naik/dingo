@@ -20,7 +20,8 @@ class CreateTaskFormTestCase(TestCase):
         self.form_input = {
             'name': 'Coursework',
             'description': 'This is an important django project to finish.',
-            'deadline': deadline
+            'deadline': deadline,
+            'priority': 3
         }
 
     def test_valid_create_task_form(self):

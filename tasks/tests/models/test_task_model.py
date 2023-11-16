@@ -12,6 +12,7 @@ class TaskModelTestCase(TestCase):
         'tasks/tests/fixtures/default_user.json',
         'tasks/tests/fixtures/default_task.json'
     ]
+    
     def setUp(self):
         self.task = Task.objects.get(name='Testing')
 
