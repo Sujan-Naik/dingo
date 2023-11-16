@@ -44,9 +44,18 @@ class User(AbstractUser):
 class Task(models.Model):
     """Model used for tasks."""
 
+    class Priority(models.IntegerChoices):
+        """Priority level for the task"""
+        BACKLOG = 1
+        LOW = 2
+        MEDIUM = 3
+        HIGH = 4
+        URGENT = 5
+
     name = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=5000, blank=False)
     deadline = models.DateTimeField(blank=False)
+    priority = models.IntegerField(choices=Priority.choices, blank=False, default=Priority.MEDIUM)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
