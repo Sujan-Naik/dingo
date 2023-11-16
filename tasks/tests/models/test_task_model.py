@@ -19,29 +19,29 @@ class TaskModelTestCase(TestCase):
         self.task.deadline = timezone.now() + timedelta(days=1)
 
     def test_valid_task(self):
-        self._assert_task_is_valid
+        self._assert_task_is_valid()
 
     def test_priority_cannot_be_blank(self):
-        self.priority = None
-        self._assert_task_is_invalid 
+        self.task.priority = None
+        self._assert_task_is_invalid()
 
     def test_priority_cannot_be_less_than_1(self):
-        self.priority = 0
-        self._assert_task_is_invalid 
+        self.task.priority = 0
+        self._assert_task_is_invalid()
 
     def test_priority_cannot_be_greater_than_5(self):
-        self.priority = 6
-        self._assert_task_is_invalid 
+        self.task.priority = 6
+        self._assert_task_is_invalid()
 
     def test_priority_can_be_5(self):
-        self.priority = 5
-        self._assert_task_is_valid
+        self.task.priority = 5
+        self._assert_task_is_valid()
 
 
     def _assert_task_is_valid(self):
         try:
             self.task.full_clean()
-        except (ValidationError):
+        except ValidationError:
             self.fail('Test task should be valid')
 
     def _assert_task_is_invalid(self):
