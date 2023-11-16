@@ -10,10 +10,7 @@ from tasks.tests.helpers import reverse_with_next
 class SignUpViewTestCase(TestCase):
     """Tests of the task creation view."""
 
-    fixtures = [
-        'tasks/tests/fixtures/default_user.json',
-        'tasks/tests/fixtures/default_task.json'
-    ]
+    fixtures = ['tasks/tests/fixtures/default_user.json']
 
     def setUp(self):
         self.url = reverse('create_task')
@@ -30,6 +27,7 @@ class SignUpViewTestCase(TestCase):
         self.assertEqual(self.url,'/create_task/')
 
     def test_get_create_task(self):
+        self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'create_task.html')
