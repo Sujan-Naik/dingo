@@ -1,0 +1,13 @@
+[
+    {
+        "model": "tasks.task",
+        "pk": 1,
+        "fields": {
+            "name": "Testing",
+            "description": "The Task model needs testing.",
+            "deadline": "2023-11-16T15:43:22.039Z",
+            "priority": 3,
+            "author": 1
+        }
+    }
+]
