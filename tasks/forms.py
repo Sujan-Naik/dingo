@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import User, Task, Team
 
@@ -152,38 +153,49 @@ class CreateTaskForm(forms.ModelForm):
         task.save()
         return task
 
-class TeamCreateForm(forms.Form):
-    """Form enabling users to create a password."""
+class TeamCreateForm(forms.ModelForm):
 
-    team_name = forms.CharField(label='New team name', widget=forms.PasswordInput())
+    class Meta:
+        model = Team
+        fields = ['team_name', 'team_members']
+
+    team_name = forms.CharField(
+        required=True
+    )
+
+    team_members = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        to_field_name='username',
+        widget=forms.CheckboxSelectMultiple,
+        required=True
+    )
 
     def __init__(self, user=None, **kwargs):
-        """Construct new form instance with a user instance."""
-
         super().__init__(**kwargs)
         self.user = user
 
     def clean(self):
-        """Clean the data and generate messages for any errors."""
+        cleaned_data = super().clean()
 
-        super().clean()
+        team_members = cleaned_data.get('team_members')
+        if not team_members:
+            raise ValidationError('A team must have at least 1 member.')
+
+        team_name = cleaned_data['team_name']
+
+        if Team.objects.filter(team_name=team_name).exclude(pk=self.instance.pk).exists():
+            raise ValidationError('A team with this name already exists.')
+
+        if not team_name:
+            raise ValidationError('A team name cannot be empty')
 
 
-    def save(self):
-        """Save the user's new password."""
 
-        # new_password = self.cleaned_data['new_password']
-        # if self.user is not None:
-        #     self.user.set_password(new_password)
-        #     self.user.save()
 
-        # user = User.objects.create_user(
-        #     self.cleaned_data.get('username'),
-        #     first_name=self.cleaned_data.get('first_name'),
-        #     last_name=self.cleaned_data.get('last_name'),
-        #     email=self.cleaned_data.get('email'),
-        #     password=self.cleaned_data.get('new_password'),
-        # )
+        return cleaned_data
 
-        team = Team.objects.create(team_name=self.cleaned_data.get('team_name'), team_members=self.user)
-        return self.user
+    def save(self, commit=True):
+        team = super().save(commit=False)
+        team.save()
+        team.team_members.set(self.cleaned_data.get('team_members'))
+        return team
