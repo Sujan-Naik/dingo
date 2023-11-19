@@ -3,6 +3,8 @@
   <h2>My Tasks</h2>
   <ul>
     {% for task in tasks %}
+    <span class="task-number">{{ forloop.counter }}.</span>
+<!--    add task counter-->
       <li><a href="{% url 'task_detail' task.name %}">{{ task.name }}</a></li>
     {% endfor %}
   </ul>
