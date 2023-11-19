@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -5,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
@@ -34,7 +37,29 @@ def task_list(request):
 def task_detail(request,name):
     """Show the task details in task list"""
     task = get_object_or_404(Task, name=name)
-    return render(request, 'task_detail.html', {'task': task})
+    now = timezone.now()
+    # curent time
+
+    time_left = task.deadline - now
+    task.time_left = time_left
+    # calculate the time left in days hours and minutes
+    if time_left:
+        days_left = task.time_left.days
+        hours_left = task.time_left.seconds // 3600
+        minutes_left = (task.time_left.seconds % 3600) // 60
+    else:
+        days = 0
+        hours = 0
+        minutes = 0
+
+    # combine them
+    time_remaining = {
+        'task': task,
+        'days_left' : days_left,
+        'hours_left' : hours_left,
+        'minutes_left' : minutes_left,
+    }
+    return render(request, 'task_detail.html', time_remaining)
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
