@@ -38,5 +38,3 @@ class TaskListTestCase(TestCase):
     # test if has many tasks to show, the number of tasks
     def test_task_number(self):
         pass
-
-
