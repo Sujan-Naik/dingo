@@ -28,3 +28,4 @@ class TaskDetailViewTest(TestCase):
         self.assertContains(response, 'Author')
         self.assertContains(response, 'Time Remaining')
 
+
