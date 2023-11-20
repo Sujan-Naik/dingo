@@ -13,7 +13,7 @@ class SignUpViewTestCase(TestCase):
     fixtures = ['tasks/tests/fixtures/default_user.json']
 
     def setUp(self):
-        self.url = reverse('task_list')
+        self.url = reverse('create_task')
         self.task_time = timezone.now() + timedelta(days=1)
         self.form_input = {
             'name': 'Test',
