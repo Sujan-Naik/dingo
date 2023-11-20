@@ -1,9 +1,24 @@
-
 {% extends 'task_list.html' %}
 
 {% block content %}
   <h2>{{ task.name }}</h2>
-  <p>{{ task.description }}</p>
-  <p>Due Date: {{ task.deadline }}</p>
+  <p>Description: {{ task.description }}</p>
+<span><strong>Due Date: </strong>{{ task.deadline }}</span>
+
+  <!--check if has time-->
+  {% if task.time_left %}
+  {% if task.time_left.days >= 0 %}
+    <span><strong>Time Remaining:</strong> {{ days_left }} days
+      {{ hours_left }} hours
+      {{ minutes_left }} minutes
+    </span>
+
+  {% else %}
+    <span><strong>Time Remaining:</strong> Expired</span>
+  {% endif %}
+{% else %}
+    <span><strong>Time Remaining:</strong> Expired</span>
+  {% endif %}
+
   <p>Author: {{ task.author }}</p>
 {% endblock %}

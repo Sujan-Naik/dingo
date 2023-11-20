@@ -11,6 +11,8 @@ from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
 from .models import Task
+from datetime import datetime
+from django.utils import timezone
 
 
 @login_required
@@ -35,7 +37,30 @@ def task_list(request):
 def task_detail(request,name):
     """Show the task details in task list"""
     task = get_object_or_404(Task, name=name)
-    return render(request, 'task_detail.html', {'task': task})
+    now = timezone.now()
+    # curent time
+
+    time_left = task.deadline - now
+    task.time_left = time_left
+    # calculate the time left in days hours and minutes
+    if time_left:
+        days_left = task.time_left.days
+        hours_left = task.time_left.seconds // 3600
+        minutes_left = (task.time_left.seconds % 3600) // 60
+    else:
+        days = 0
+        hours = 0
+        minutes = 0
+
+    # combine them
+    time_remaining = {
+        'task': task,
+        'days_left': days_left,
+        'hours_left': hours_left,
+        'minutes_left': minutes_left,
+    }
+    return render(request, 'task_detail.html', time_remaining)
+
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
