@@ -3,11 +3,53 @@
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Create a new team here</h1>
+      <h1>Create a new team and add members here</h1>
       <form action="{% url 'team' %}" method="post">
         {% csrf_token %}
-        {% include 'partials/bootstrap_form.html' with form=form %}
-        <input type="submit" value="Create a new team, type the name here!" class="btn btn-primary">
+
+        {% if form.team_name.value is None or form.team_members.value is None %}
+          <div class="alert alert-warning" role="alert">
+            {% if form.team_name.value is None %}
+              <li>Team name cannot be empty.</li>
+            {% endif %}
+            {% if form.team_members.value is None %}
+              <li>A team must have at least 1 member.</li>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> Please correct the following issues:
+            <ul>
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <div class="team-name-choice">
+          <label for="{{ form.team_name.id_for_label }}">New team name:</label>
+          {{ form.team_name }}
+        </div>
+
+        <div class="team_member-choice">
+          <label for="{{ form.team_members.id_for_label }}">Select team members:</label>
+          <div class="row">
+            {% for checkbox in form.team_members %}
+              <div class="col-md-3 mb-2">
+                <div class="form-check">
+                  {{ checkbox }}
+                  <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice }}</label>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="invalid-feedback d-block">{{ form.team_members.errors }}</div>
+        </div>
+
+        <input type="submit" value="Create a new team!" class="btn btn-primary">
       </form>
     </div>
   </div>
