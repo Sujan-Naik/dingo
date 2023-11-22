@@ -20,21 +20,25 @@ def dashboard(request):
     current_user = request.user
     return render(request, 'dashboard.html', {'user': current_user})
 
+
 @login_prohibited
 def home(request):
     """Display the application's start/home screen."""
 
     return render(request, 'home.html')
 
+
 def task_list(request):
     """Show the task list in the dashboard"""
     tasks = Task.objects.filter(author=request.user)
     return render(request, 'task_list.html', {'tasks': tasks})
 
-def task_detail(request,name):
+
+def task_detail(request, name):
     """Show the task details in task list"""
     task = get_object_or_404(Task, name=name)
     return render(request, 'task_detail.html', {'task': task})
+
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -161,8 +165,8 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
-class CreateTaskView(LoginRequiredMixin, FormView):
 
+class CreateTaskView(LoginRequiredMixin, FormView):
     """Display the create task screen and handle creating tasks."""
 
     model = CreateTaskForm
@@ -178,12 +182,13 @@ class CreateTaskView(LoginRequiredMixin, FormView):
         return kwargs
 
     def form_valid(self, form):
-        #self.object = form.save()
+        # self.object = form.save()
         form.save()
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""
