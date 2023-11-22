@@ -15,6 +15,7 @@ class TeamFormTestCase(TestCase):
     ]
 
     def setUp(self):
+        self.user = User.objects.get(username='@johndoe')
         self.form_input = {
             'team_name': 'TestTeam',
             'team_members': [User.objects.get(username='@johndoe'),
@@ -24,24 +25,24 @@ class TeamFormTestCase(TestCase):
         }
 
     def test_form_has_necessary_fields(self):
-        form = TeamCreateForm()
+        form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertIn('team_name', form.fields)
         self.assertIn('team_members', form.fields)
 
         self.assertTrue(isinstance(form.fields['team_members'], forms.ModelMultipleChoiceField))
 
     def test_valid_team_form(self):
-        form = TeamCreateForm(data=self.form_input)
+        form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertTrue(form.is_valid())
 
     def test_form_members_uses_form_validation(self):
         """Tests that team members cannot be empty"""
         self.form_input['team_members'] = []
-        form = TeamCreateForm(data=self.form_input)
+        form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertFalse(form.is_valid())
 
     def test_form_must_save_correctly(self):
-        form = TeamCreateForm(data=self.form_input)
+        form = TeamCreateForm(data=self.form_input, user=self.user)
         before_count = Team.objects.count()
         form.save()
         after_count = Team.objects.count()
@@ -62,7 +63,7 @@ class TeamFormTestCase(TestCase):
     def test_duplicate_team_name(self):
         Team.objects.create(team_name='TestTeam')
 
-        form = TeamCreateForm(data=self.form_input)
+        form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertFormError(form, 'team_name', 'Team with this Team name already exists.')
 

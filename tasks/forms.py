@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import User, Task, Team
 
+
 class LogInForm(forms.Form):
     """Form enabling registered users to log in."""
 
@@ -32,6 +33,7 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
+
 class NewPasswordMixin(forms.Form):
     """Form mixing for new_password and password_confirmation fields."""
 
@@ -42,7 +44,7 @@ class NewPasswordMixin(forms.Form):
             regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
             message='Password must contain an uppercase character, a lowercase '
                     'character and a number'
-            )]
+        )]
     )
     password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
 
@@ -63,7 +65,7 @@ class PasswordForm(NewPasswordMixin):
 
     def __init__(self, user=None, **kwargs):
         """Construct new form instance with a user instance."""
-        
+
         super().__init__(**kwargs)
         self.user = user
 
@@ -111,15 +113,16 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         )
         return user
 
-class CreateTaskForm(forms.ModelForm):
 
+class CreateTaskForm(forms.ModelForm):
     """Form enabling registered users to create tasks."""
+
     class Meta:
         """Form options."""
         model = Task
         fields = ['name', 'description', 'deadline', 'priority']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs = {
+            'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
                 'type': 'datetime-local'
             })
@@ -149,12 +152,13 @@ class CreateTaskForm(forms.ModelForm):
         task_description = self.cleaned_data.get("description")
         task_deadline = self.cleaned_data.get("deadline")
         task_priority = self.cleaned_data.get("priority")
-        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority, author=self.user)
+        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
+                    author=self.user)
         task.save()
         return task
 
-class TeamCreateForm(forms.ModelForm):
 
+class TeamCreateForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ['team_name', 'team_members']
@@ -189,13 +193,17 @@ class TeamCreateForm(forms.ModelForm):
         if not team_name:
             raise ValidationError('A team name cannot be empty')
 
-
-
+        if self.user is None:
+            self.add_error(None, "You must be logged in first!")
 
         return cleaned_data
 
     def save(self, commit=True):
         team = super().save(commit=False)
+        team.team_admin = self.user
+        team.team_name = self.cleaned_data.get('team_name')
         team.save()
         team.team_members.set(self.cleaned_data.get('team_members'))
+
         return team
+

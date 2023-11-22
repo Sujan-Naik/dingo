@@ -66,5 +66,6 @@ class Team(models.Model):
 
     team_name = models.CharField(max_length=50,unique=True, blank=False, primary_key=True)
     team_members = models.ManyToManyField(User, related_name='teams', blank=False)
+    team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 

@@ -31,7 +31,8 @@ class TeamViewTest(TestCase):
             'team_members': [User.objects.get(username='@johndoe'),
                              User.objects.get(username='@janedoe'),
                              User.objects.get(username='@petrapickles'),
-                             User.objects.get(username='@peterpickles')]
+                             User.objects.get(username='@peterpickles')],
+            'team_admin': self.user
         }
 
         response = self.client.post(reverse('team'), data=self.form_input)
@@ -52,6 +53,7 @@ class TeamViewTest(TestCase):
         ]
         expected_users = sorted(expected_users, key=lambda user: user.username)
         self.assertEqual(TeamMembers, expected_users)
+        self.assertEqual(team.team_admin, self.user)
 
         # Check if success message is present
         storage = get_messages(response.wsgi_request)
