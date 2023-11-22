@@ -14,19 +14,24 @@ class TeamModelTestCase(TestCase):
         self.user3 = User.objects.get(username='@petrapickles')
         self.user4 = User.objects.get(username='@peterpickles')
 
+        self.team = Team.objects.create(
+            team_name='TestTeam',
+            team_admin=self.user1
+        )
+        self.team.team_members.set([self.user1, self.user2, self.user3, self.user4])
+
     def test_create_team(self):
         team = Team.objects.create(
-            team_name='TestTeam'
+            team_name='CreateTestTeam',
+            team_admin=self.user1
         )
         team.team_members.set([self.user1, self.user2, self.user3, self.user4])
 
-        self.assertEqual(team.team_name, 'TestTeam')
+        self.assertEqual(team.team_name, 'CreateTestTeam')
+        self.assertEqual(team.team_admin,self.user1)
         self.assertCountEqual(team.team_members.all(), [self.user1, self.user2, self.user3, self.user4])
 
     def test_unique_team_name(self):
-        team = Team.objects.create(team_name='TestTeam')
-        team.team_members.set([self.user1, self.user2, self.user3, self.user4])
-
         with self.assertRaises(Exception):
             another_team = Team.objects.create(team_name='TestTeam')
             another_team.team_members.set([self.user1, self.user2, self.user3, self.user4])
@@ -39,3 +44,5 @@ class TeamModelTestCase(TestCase):
         with self.assertRaises(Exception):
             Team.objects.create(team_name='TestTeam', team_members=[])
 
+    def test_admin_is_type_user(self):
+        self.assertTrue(isinstance(self.team.team_admin, User))
