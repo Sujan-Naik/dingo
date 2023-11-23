@@ -1,30 +1,51 @@
 from django.test import TestCase
 from django.urls import reverse
-from tasks.models import Task
-from datetime import datetime
+
+from tasks.forms import CreateTaskForm
+from tasks.models import Task, User
+
 
 class TaskDetailViewTest(TestCase):
 
-    def setUpTestData(self):
+    fixtures = ['tasks/tests/fixtures/default_task.json',
+                'tasks/tests/fixtures/default_user.json']
+
+    def setUp(self):
         # set the date for test
-        Task.objects.create(name="Test Task 1",
-                            description = 'test task',
-                            deadline = datetime.now(),
-                            priority = 3)
+        self.user = User.objects.get(username='@johndoe')
+        self.form_input = {
+            'name': 'Test',
+            'description': 'This is a test task.',
+            'deadline': "2023-11-16T15:43:22.039Z",
+            'priority': 3,
+            'author': self.user
+        }
+
+        Task.objects.create(name = self.form_input['name'],
+                            description = self.form_input['description'],
+                            deadline = self.form_input['deadline'],
+                            priority = self.form_input['priority'],
+                            author = self.form_input['author'])
 
     def test_task_details_view(self):
-        response = self.client.get(reverse('task_detail', args=[self.task.author]))
+        self.client.login(username=self.user.username, password='Password123')
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.name]))
         self.assertEqual(response.status_code, 200)
 
     def test_task_details_template(self):
-        response = self.client.get(reverse('task_detail', args=[self.task.author]))
-        self.assertTemplateUsed(response, 'tasks/task_detail.html')
+        self.client.login(username=self.user.username, password='Password123')
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.name]))
+        self.assertTemplateUsed(response, 'task_detail.html')
 
     def test_task_details_view_task(self):
-        response = self.client.get(reverse('task_detail', args=[self.task.author]))
-        self.assertContains(response, 'Test Task 1')
-        self.assertContains(response, 'Due Date')
-        self.assertContains(response, 'Description')
-        self.assertContains(response, 'Author')
-        self.assertContains(response, 'Time Remaining')
+        self.client.login(username=self.user.username, password='Password123')
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.name]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, task.name)
+        self.assertContains(response, task.description)
+        self.assertContains(response, task.author)
+        self.assertContains(response, task.priority)
 
