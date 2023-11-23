@@ -12,7 +12,7 @@ class User(AbstractUser):
         validators=[RegexValidator(
             regex=r'^@\w{3,}$',
             message='Username must consist of @ followed by at least three alphanumericals'
-        )]
+        )],
     )
     first_name = models.CharField(max_length=50, blank=False)
     last_name = models.CharField(max_length=50, blank=False)
@@ -63,5 +63,9 @@ class Task(models.Model):
 
 class Team(models.Model):
     """Model used to represent a team, namely its name and members"""
-    team_name = models.CharField(max_length=50,unique=True, blank=False)
-    team_members = models.ForeignKey(User, on_delete=models.PROTECT, blank=False)
+
+    team_name = models.CharField(max_length=50,unique=True, blank=False, primary_key=True)
+    team_members = models.ManyToManyField(User, related_name='teams', blank=False)
+    team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+

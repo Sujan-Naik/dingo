@@ -29,12 +29,14 @@ def home(request):
 
     return render(request, 'home.html')
 
+
 def task_list(request):
     """Show the task list in the dashboard"""
     tasks = Task.objects.filter(author=request.user)
     return render(request, 'task_list.html', {'tasks': tasks})
 
-def task_detail(request,name):
+
+def task_detail(request, name):
     """Show the task details in task list"""
     task = get_object_or_404(Task, name=name)
     now = timezone.now()
@@ -60,6 +62,7 @@ def task_detail(request,name):
         'minutes_left': minutes_left,
     }
     return render(request, 'task_detail.html', time_remaining)
+
 
 
 class LoginProhibitedMixin:
@@ -187,8 +190,8 @@ class SignUpView(LoginProhibitedMixin, FormView):
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
-class CreateTaskView(FormView):
 
+class CreateTaskView(LoginRequiredMixin, FormView):
     """Display the create task screen and handle creating tasks."""
 
     model = CreateTaskForm
@@ -204,35 +207,34 @@ class CreateTaskView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        #self.object = form.save()
+        # self.object = form.save()
         form.save()
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
-class team(LoginRequiredMixin, FormView):
-    """Allow logged in users to create new teams"""
+
+class TeamView(LoginRequiredMixin, FormView):
+    """Allow logged-in users to create new teams"""
 
     template_name = 'team.html'
     form_class = TeamCreateForm
 
     def get_form_kwargs(self, **kwargs):
         """Pass the current user to the team create form."""
-
         kwargs = super().get_form_kwargs(**kwargs)
         kwargs.update({'user': self.request.user})
         return kwargs
 
     def form_valid(self, form):
-        """Handle valid form by saving the new password."""
+        """Handle valid form by saving the new team."""
+        if form.is_valid():
+            form.save()
+            messages.success(self.request, "Team created!")
+            return redirect('dashboard')
+        return self.form_invalid(form)
 
-        form.save()
-        login(self.request, self.request.user)
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        """Redirect the user after successful password change."""
-
-        messages.add_message(self.request, messages.SUCCESS, "team created!")
-        return reverse('dashboard')
+    def form_invalid(self, form):
+        messages.error(self.request, "Form submission failed. Please check the form for errors.")
+        return super().form_invalid(form)
