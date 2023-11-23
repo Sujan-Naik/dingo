@@ -14,7 +14,7 @@ from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
-from .models import Task
+from .models import Task, Team
 
 
 @login_required
@@ -67,6 +67,30 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
             context['hours_left'] = 0
             context['minutes_left'] = 0
 
+        return context
+
+class TeamListView(LoginRequiredMixin, ListView):
+    """view the team list"""
+    model = Team
+    template_name = 'team_list.html'
+    context_object_name = 'team_list'
+
+    def get_queryset(self):
+        """Filter teams based on the logged-in user"""
+        return Team.objects.filter(team_members=self.request.user)
+
+class TeamDetailView(LoginRequiredMixin, DetailView):
+    """view the task detail"""
+    model = Team
+    template_name = 'team_detail.html'
+    context_object_name = 'team'
+
+    def get_object(self, queryset=None):
+        """get the current task"""
+        return get_object_or_404(Team, team_name=self.kwargs['team_name'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 

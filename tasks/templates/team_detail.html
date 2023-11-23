@@ -1,0 +1,16 @@
+{% extends 'team_list.html' %}
+
+{% block content %}
+  <h2>{{ team.team_name }}</h2>
+  <p>Team Members:</p>
+<ul>
+{% for member in team.team_members.all %}
+    <span class="member-number">{{ forloop.counter }}.</span>
+<!--    add member counter-->
+  <li> {{ member.username }}</li>
+    {% empty %}
+      <li>No members found</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
