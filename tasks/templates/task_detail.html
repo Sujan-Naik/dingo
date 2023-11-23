@@ -6,8 +6,8 @@
 <span><strong>Due Date: </strong>{{ task.deadline }}</span>
 
   <!--check if has time-->
-  {% if task.time_left %}
-  {% if task.time_left.days >= 0 %}
+  {% if time_left %}
+  {% if days_left >= 0 %}
     <span><strong>Time Remaining:</strong> {{ days_left }} days
       {{ hours_left }} hours
       {{ minutes_left }} minutes
