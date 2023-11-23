@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -5,14 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
 from django.views import View
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
 from .models import Task
-from datetime import datetime
-from django.utils import timezone
 
 
 @login_required
@@ -29,40 +31,43 @@ def home(request):
 
     return render(request, 'home.html')
 
+class TaskListView(LoginRequiredMixin, ListView):
+    """view the task list"""
+    model = Task
+    template_name = 'task_list.html'
+    context_object_name = 'task_list'
 
-def task_list(request):
-    """Show the task list in the dashboard"""
-    tasks = Task.objects.filter(author=request.user)
-    return render(request, 'task_list.html', {'tasks': tasks})
+    def get_queryset(self):
+        """Filter tasks based on the logged-in user"""
+        return Task.objects.filter(author=self.request.user)
 
+class TaskDetailView(LoginRequiredMixin, DetailView):
+    """view the task detail"""
+    model = Task
+    template_name = 'task_detail.html'
+    context_object_name = 'task'
 
-def task_detail(request, name):
-    """Show the task details in task list"""
-    task = get_object_or_404(Task, name=name)
-    now = timezone.now()
-    # curent time
+    def get_object(self, queryset=None):
+        """get the current task"""
+        return get_object_or_404(Task, name=self.kwargs['name'])
 
-    time_left = task.deadline - now
-    task.time_left = time_left
-    # calculate the time left in days hours and minutes
-    if time_left:
-        days_left = task.time_left.days
-        hours_left = task.time_left.seconds // 3600
-        minutes_left = (task.time_left.seconds % 3600) // 60
-    else:
-        days = 0
-        hours = 0
-        minutes = 0
+    def get_context_data(self, **kwargs):
+        """generate the details of current task and show them in task_detail.html"""
+        context = super().get_context_data(**kwargs)
+        now = timezone.now()
+        time_left = context['task'].deadline - now
+        if time_left :
+            context['time_left'] = 1;
+            context['days_left'] = time_left.days
+            context['hours_left'] = time_left.seconds // 3600
+            context['minutes_left'] = (time_left.seconds % 3600) // 60
+        else:
+            context['time_left'] = 0;
+            context['days_left'] = 0
+            context['hours_left'] = 0
+            context['minutes_left'] = 0
 
-    # combine them
-    time_remaining = {
-        'task': task,
-        'days_left': days_left,
-        'hours_left': hours_left,
-        'minutes_left': minutes_left,
-    }
-    return render(request, 'task_detail.html', time_remaining)
-
+        return context
 
 
 class LoginProhibitedMixin:

@@ -2,10 +2,12 @@
 {% block content %}
   <h2>My Tasks</h2>
   <ul>
-    {% for task in tasks %}
+    {% for task in task_list %}
     <span class="task-number">{{ forloop.counter }}.</span>
 <!--    add task counter-->
       <li><a href="{% url 'task_detail' task.name %}">{{ task.name }}</a></li>
+    {% empty %}
+      <li>No tasks found</li>
     {% endfor %}
   </ul>
 {% endblock %}
