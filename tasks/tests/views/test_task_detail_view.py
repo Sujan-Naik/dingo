@@ -5,7 +5,7 @@ from datetime import datetime
 
 class TaskDetailViewTest(TestCase):
 
-    def setUpTestData(cls):
+    def setUpTestData(self):
         # set the date for test
         Task.objects.create(name="Test Task 1",
                             description = 'test task',
