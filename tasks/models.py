@@ -68,4 +68,10 @@ class Team(models.Model):
     team_members = models.ManyToManyField(User, related_name='teams', blank=False)
     team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+    def invite_member(self,user):
+        """method to invite user to team"""
+        self.team_members.add(user)
 
+    def remove_member(self, user):
+        """method to remove user from team"""
+        self.team_members.remove(user)

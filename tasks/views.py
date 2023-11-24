@@ -6,15 +6,16 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
 from tasks.helpers import login_prohibited
-from .models import Task, Team
+from .models import Task, Team, User
 
 
 @login_required
@@ -91,8 +92,39 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['all_users'] = User.objects.all()
+        context['invite_form'] = InviteMemberForm()
         return context
 
+    def post(self, request, *args, **kwargs):
+        team = self.get_object()
+        action = request.POST.get('action')
+
+        if action == 'invite':
+            form = InviteMemberForm(request.POST, instance=team)
+            users_to_invite = request.POST.getlist('username')
+            if form.is_valid():
+                # users_to_invite = form.cleaned_data.get('team_members')
+                for username in users_to_invite:
+                    user = User.objects.get(username=username)
+                # check if the user is already in the team
+                    if user in team.team_members.all():
+                        messages.error(request, f'{user.username} is already in the team.')
+                    else:
+                        team.team_members.add(user)
+                        messages.success(request, f'Successfully invite {user.username}.')
+
+        elif action == 'remove':
+            username = request.POST.get('username')
+            user_to_remove = get_object_or_404(User, username=username)
+
+            if request.user == team.team_admin:
+                team.team_members.remove(user_to_remove)
+                messages.success(request, f'{user_to_remove.username} is removed from the team.')
+            else:
+                messages.error(request, 'You do not have permission to remove member')
+
+        return HttpResponseRedirect(reverse('team_detail', kwargs={'team_name': team.team_name}))
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
