@@ -69,3 +69,14 @@ class Team(models.Model):
     team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 
+class Notification(models.Model):
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField(max_length=100, blank=False)
+    timestmap = models.DateTimeField(auto_now_add=True)
+
+    
+
+
+
+
