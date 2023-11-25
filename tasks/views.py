@@ -14,6 +14,8 @@ from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
 from tasks.helpers import login_prohibited
 from .models import Task
+from .signals import task_created_handler
+from .signals import task_completed
 
 
 @login_required
