@@ -212,14 +212,7 @@ class InviteMemberForm(forms.ModelForm):
         model = Team
         fields = ['team_name']
         widgets = {
-            # 'team_members' : forms.CheckboxSelectMultiple,
         }
 
-    # team_members = forms.ModelMultipleChoiceField(
-    #     queryset=User.objects.all(),
-    #     to_field_name='username',
-    #     widget=forms.CheckboxSelectMultiple,
-    #     required=True
-    # )
 
 
