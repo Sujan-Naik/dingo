@@ -15,7 +15,9 @@ from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTas
 from tasks.helpers import login_prohibited
 from .models import Task
 from .signals import task_created_handler
-from .signals import task_completed
+from .signals import task_completed_handler
+from .signals import task_deleted_handler
+from .signals import task_updated_handler
 
 
 @login_required
@@ -215,7 +217,7 @@ class CreateTaskView(LoginRequiredMixin, FormView):
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-
+    
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""
@@ -240,3 +242,33 @@ class TeamView(LoginRequiredMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
+    
+
+
+class ModifyTaskView(LoginRequiredMixin, UpdateView):
+
+    model = Task
+    template_name = "create_task.html"
+    form_class = CreateTaskForm
+
+    def get_object(self, queryset=None):
+        task = super().get_object(queryset=queryset)
+
+        if task.author != self.request.user:
+            messages.error(self.request, "You do not have permission to modify this task")
+            return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN) 
+
+        return task
+    
+    def form_valid(self, form):
+        # self.object = form.save()
+        form.save()
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Task Updated Succesfuly")
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+
+
+

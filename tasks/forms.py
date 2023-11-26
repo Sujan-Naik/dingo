@@ -156,6 +156,13 @@ class CreateTaskForm(forms.ModelForm):
                     author=self.user)
         task.save()
         return task
+    
+
+class ModifyTaskForm(forms.ModelForm):
+
+    class Meta:
+        model = Task
+        fields = ['name', 'description', 'deadline', 'priority']
 
 
 class TeamCreateForm(forms.ModelForm):
