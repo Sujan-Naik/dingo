@@ -120,7 +120,7 @@ class CreateTaskForm(forms.ModelForm):
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description', 'deadline', 'priority']
+        fields = ['name', 'description', 'deadline', 'team', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
@@ -151,9 +151,10 @@ class CreateTaskForm(forms.ModelForm):
         task_name = self.cleaned_data.get("name")
         task_description = self.cleaned_data.get("description")
         task_deadline = self.cleaned_data.get("deadline")
+        task_team = self.cleaned_data.get("team")
         task_priority = self.cleaned_data.get("priority")
         task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
-                    author=self.user)
+                    author=self.user, team=task_team)
         task.save()
         return task
 
