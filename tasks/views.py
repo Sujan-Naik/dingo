@@ -41,9 +41,9 @@ def task_list(request):
     return render(request, 'task_list.html', {'tasks': tasks})
 
 
-def task_detail(request, name):
+def task_detail(request, pk):
     """Show the task details in task list"""
-    task = get_object_or_404(Task, name=name)
+    task = get_object_or_404(Task, pk=pk)
     now = timezone.now()
     # curent time
 
@@ -248,7 +248,7 @@ class TeamView(LoginRequiredMixin, FormView):
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
     model = Task
-    template_name = "create_task.html"
+    template_name = "modify_task.html"
     form_class = CreateTaskForm
 
     def get_object(self, queryset=None):

@@ -163,6 +163,30 @@ class ModifyTaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = ['name', 'description', 'deadline', 'priority']
+        widgets = {
+            'deadline': forms.DateTimeInput(attrs={'classs':'form-control', 'type':'datetime-local'})
+        }
+
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_deadline(self):
+        deadline_datetime = self.cleaned_data.get('deadline')
+
+        if deadline_datetime < timezone.now():
+            raise forms.ValidationError("Deadline is invalid")
+        
+        return deadline_datetime
+    
+    def save(self, commit=True):
+        task = super().save(commit=False)
+        task.author = self.user
+
+        if commit:
+            task.save()
+
+        return task
 
 
 class TeamCreateForm(forms.ModelForm):
