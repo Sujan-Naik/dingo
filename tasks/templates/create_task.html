@@ -6,7 +6,7 @@
       <h1>Create Task</h1>
       <form action="{% url 'create_task' %}" method="post">
         {% csrf_token %}
-        {% include 'partials/bootstrap_form.html' with form=form %}
+        {{ form.as_p }}
         <input type="submit" value="Create Task" class="btn btn-primary">
       </form>
     </div>

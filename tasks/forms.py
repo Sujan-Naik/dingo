@@ -116,17 +116,26 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 class CreateTaskForm(forms.ModelForm):
     """Form enabling registered users to create tasks."""
-
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description', 'deadline', 'team', 'priority']
+        fields = ['name', 'description', 'deadline', 'team', 'members', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
                 'type': 'datetime-local'
             })
         }
+
+    name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    team = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}), queryset=Team.objects.all())
+    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
+
+    members = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"})
+    )
 
     def __init__(self, user=None, **kwargs):
         """Construct new form instance with a user instance."""
@@ -145,6 +154,16 @@ class CreateTaskForm(forms.ModelForm):
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
 
+        team = self.cleaned_data.get('team')
+        members = self.cleaned_data.get('members')
+        if members is None:
+            self.add_error('members', "Select at least one team member!")
+        else:
+            for member in members:
+                if not team in member.teams.all():
+                    self.add_error('members', "Members must be in the specified team!")
+                    break
+
     def save(self):
         """Create a new task."""
         super().save(commit=False)
@@ -156,6 +175,7 @@ class CreateTaskForm(forms.ModelForm):
         task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
                     author=self.user, team=task_team)
         task.save()
+        task.members.set(self.cleaned_data.get('members'))
         return task
 
 

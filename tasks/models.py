@@ -76,8 +76,9 @@ class Task(models.Model):
     description = models.CharField(max_length=5000, blank=False)
     deadline = models.DateTimeField(blank=False)
     priority = models.IntegerField(choices=Priority.choices, blank=False, default=Priority.MEDIUM)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=False)
+    members = models.ManyToManyField(User, related_name='assigned_members', blank=False)
 
     def __str__(self):
         return self.name
