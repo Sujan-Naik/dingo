@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, ModifyTaskForm
 from tasks.helpers import login_prohibited
 from .models import Task
 from .signals import task_created_handler
@@ -249,7 +249,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
     model = Task
     template_name = "modify_task.html"
-    form_class = CreateTaskForm
+    form_class = ModifyTaskForm
 
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
@@ -262,7 +262,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     
     def form_valid(self, form):
         # self.object = form.save()
-        form.save()
+        form.instance.author = self.request.user
         return super().form_valid(form)
     
     def get_success_url(self):

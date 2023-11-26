@@ -169,7 +169,6 @@ class ModifyTaskForm(forms.ModelForm):
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user = user
 
     def clean_deadline(self):
         deadline_datetime = self.cleaned_data.get('deadline')
@@ -181,8 +180,6 @@ class ModifyTaskForm(forms.ModelForm):
     
     def save(self, commit=True):
         task = super().save(commit=False)
-        task.author = self.user
-
         if commit:
             task.save()
 
