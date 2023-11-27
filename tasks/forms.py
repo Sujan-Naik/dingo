@@ -214,5 +214,7 @@ class InviteMemberForm(forms.ModelForm):
         widgets = {
         }
 
-
-
+class TaskSortForm(forms.Form):
+    """Form to allow for sorting + filtering of the task list"""
+    sort_by = forms.CharField()
+    filter_by = forms.CharField()

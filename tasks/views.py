@@ -13,7 +13,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, TaskSortForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User
 
@@ -33,14 +33,25 @@ def home(request):
     return render(request, 'home.html')
 
 class TaskListView(LoginRequiredMixin, ListView):
-    """view the task list"""
+    """View the task list"""
     model = Task
     template_name = 'task_list.html'
     context_object_name = 'task_list'
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user"""
-        return Task.objects.filter(author=self.request.user)
+        sort_by = self.request.GET.get("sort", "deadline")
+        filter_by = self.request.GET.get("filter", "")
+        return Task.objects.filter(author=self.request.user, name__icontains=filter_by).order_by(sort_by)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = TaskSortForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Deal with sorting + filtering"""
+        return HttpResponseRedirect(reverse('task_list') + f"?sort={request.POST.get('sort_by')}&filter={request.POST.get('filter_by')}")
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
