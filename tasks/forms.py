@@ -129,7 +129,6 @@ class CreateTaskForm(forms.ModelForm):
 
     name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
-    team = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}), queryset=Team.objects.all())
     priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
 
     members = forms.ModelMultipleChoiceField(
@@ -142,7 +141,8 @@ class CreateTaskForm(forms.ModelForm):
 
         super().__init__(**kwargs)
         self.user = user
-
+        self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
+                                      queryset=Team.objects.filter(team_members__in=[self.user]))
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
