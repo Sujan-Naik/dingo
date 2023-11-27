@@ -143,6 +143,9 @@ class CreateTaskForm(forms.ModelForm):
         self.user = user
         self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
                                       queryset=Team.objects.filter(team_members__in=[self.user]))
+        '''self.fields['members'] = forms.ModelMultipleChoiceField(
+            queryset=Team.objects.filter(team_members__in=[self.user]).values('team_name'),
+            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))'''
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
