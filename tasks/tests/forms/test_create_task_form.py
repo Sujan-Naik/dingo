@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import check_password
 from django import forms
 from django.test import TestCase
 from tasks.forms import CreateTaskForm
-from tasks.models import Task, User
+from tasks.models import Task, User, Team
 from datetime import datetime
 from django.utils import timezone
 
@@ -11,17 +11,26 @@ from django.utils import timezone
 class CreateTaskFormTestCase(TestCase):
     """Unit tests of the create task form."""
 
-    fixtures = ['tasks/tests/fixtures/default_user.json']
+    """ Pre-populates the table with user"""
+    fixtures = \
+        [
+            'tasks/tests/fixtures/default_user.json',
+            'tasks/tests/fixtures/default_team.json'
+        ]
 
     def setUp(self):
         deadline = datetime(2024, 12, 15, 16, 00)
         deadline = deadline.replace(tzinfo=timezone.utc)
         self.user = User.objects.get(username='@johndoe')
-        self.form_input = {
+        self.team = Team.objects.get(team_name='Default Team')
+        self.form_input = \
+        {
             'name': 'Coursework',
             'description': 'This is an important django project to finish.',
             'deadline': deadline,
-            'priority': 3
+            'priority': 3,
+            'team': self.team.pk,
+            'members': [self.user.pk]
         }
 
     def test_valid_create_task_form(self):
