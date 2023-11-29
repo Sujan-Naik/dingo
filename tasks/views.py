@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from django.conf import settings
 from django.contrib import messages
@@ -6,11 +7,12 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
+from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.views import View
-from django.views.generic.edit import FormView, UpdateView
-from django.urls import reverse
+from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.urls import reverse, reverse_lazy
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, ModifyTaskForm
 from tasks.helpers import login_prohibited
 from .models import Task
@@ -268,6 +270,16 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Succesfuly")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    
+
+class DeleteTaskView(LoginRequiredMixin, DeleteView):
+
+    model = Task
+    template_name = "tasks/delete.html"
+    context_object_name = 'task'
+    success_url = reverse_lazy('task_list')
+
+    
 
 
 
