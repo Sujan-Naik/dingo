@@ -1,0 +1,61 @@
+from django.test import TestCase, Client
+from django.contrib.auth.models import User
+from django.urls import reverse
+
+from tasks.models import Team
+from tasks.forms import InviteMemberForm
+
+class InviteMemberFormTest(TestCase):
+    """ Pre-populates the table with user"""
+    fixtures = [
+        'tasks/tests/fixtures/other_users.json',
+        'tasks/tests/fixtures/default_user.json'
+    ]
+
+    def setUp(self):
+        # Create a dictionary with valid form data
+        self.user = User.objects.get(username='@johndoe')
+        self.form_input = {
+            'team_name': 'TestTeam',
+            'team_members': [User.objects.get(username='@johndoe'),
+                             User.objects.get(username='@janedoe'),
+                             User.objects.get(username='@petrapickles'),
+                             User.objects.get(username='@peterpickles')],
+            'team_admin': User.objects.get(username='@johndoe')
+        }
+
+        self.client = Client()
+        self.client.login(username='@johndoe', password='Password123')
+
+    def test_invite_member_form_valid(self):
+        # Instantiate the form with the provided data
+        form = InviteMemberForm(data=self.form_input)
+
+        # Assert that the form is valid
+        self.assertTrue(form.is_valid())
+
+        # Check that the team was created successfully
+        new_team = Team.objects.get(team_name=form['team_name'])
+        self.assertEqual(new_team.team_name, 'TestTeam')
+
+    def test_invite_member_form_invalid(self):
+        # Create a dictionary with invalid form data
+        invalid_form_data = {
+            'team_name': 'invalid_name',
+            'team_tyoe': 'small team'
+        }
+        form = InviteMemberForm(data=invalid_form_data)
+
+        # Assert that the form is not valid
+        self.assertFalse(form.is_valid())
+
+    def test_invite_member_form_rendered_correctly(self):
+        # Send a GET request to the view where the form is used
+        response = self.client.get(reverse("team_detail"))
+
+        # Assert that the response status code is 200 (OK)
+        self.assertEqual(response.status_code, 200)
+
+        # Assert that the response contains the form
+        self.assertContains(response, self.form_input['team_name'])
+        self.assertContains(response, self.form_input['team_members'])
