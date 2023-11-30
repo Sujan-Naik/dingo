@@ -23,16 +23,20 @@ class TeamDetailViewTest(TestCase):
 
         self.team_member1 = User.objects.get(username='@johndoe')
         self.team_member2 = User.objects.get(username='@janedoe')
-        self.team.team_members.add(self.team_member1, self.team_member2)
-        self.response = self.client.get(reverse('team_detail', args=[self.team.team_name]))
+        # self.team.team_members.add(self.team_member1, self.team_member2)
+        # self.response = self.client.get(reverse('team_detail', args=[self.team.team_name]))
 
     def test_team_details_view(self):
         self.client.login(username=self.user.username, password='Password123')
-        self.assertEqual(self.response.status_code, 200)
+        team = Team.objects.get(team_name='test_team')
+        response = self.client.get(reverse('team_detail',args=[team.team_name]))
+        self.assertEqual(response.status_code, 200)
 
     def test_team_details_template(self):
         self.client.login(username=self.user.username, password='Password123')
-        self.assertTemplateUsed(self.response, 'team_detail.html')
+        team = Team.objects.get(team_name='test_team')
+        response = self.client.get(reverse('team_detail',args=[team.team_name]))
+        self.assertTemplateUsed(response, 'team_detail.html')
 
     def test_team_details_view(self):
         self.client.login(username=self.user.username, password='Password123')
@@ -47,7 +51,8 @@ class TeamDetailViewTest(TestCase):
         self.client.login(username=self.user.username, password='Password123')
         team = Team.objects.get(team_name='test_team')
         invited_user = User.objects.create_user(username='@inviteduser', password='Password123')
-        self.form_data['action'] = 'invite'
+        self.form_input['action'] = 'invite'
         response = self.client.get(reverse('team_detail', args=[team.team_name]))
+        self.assertContains(response,invited_user.username)
 
 
