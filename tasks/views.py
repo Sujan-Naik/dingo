@@ -11,9 +11,9 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import FormView, UpdateView
-from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
+from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.urls import reverse, reverse_lazy
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, ModifyTaskForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User
 
@@ -299,3 +299,33 @@ class TeamView(LoginRequiredMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
+
+
+class ModifyTaskView(LoginRequiredMixin, UpdateView):
+
+    model = Task
+    template_name = "modify_task.html"
+    form_class = ModifyTaskForm
+
+    def get_object(self, queryset=None):
+        task = super().get_object(queryset=queryset)
+        return Task
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    
+
+class DeleteTaskView(LoginRequiredMixin, DeleteView):
+
+    model = Task
+    template_name = "tasks/delete.html"
+    context_object_name = 'task'
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
+        return reverse_lazy(task_list)
