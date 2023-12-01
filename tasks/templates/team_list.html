@@ -1,0 +1,13 @@
+{% extends 'dashboard.html' %}
+{% block content %}
+  <h2>My Teams</h2>
+  <ul>
+    {% for team in team_list %}
+    <span class="team-number">{{ forloop.counter }}.</span>
+<!--    add team counter-->
+      <li><a href="{% url 'team_detail' team.team_name %}">{{ team.team_name }}</a></li>
+    {% empty %}
+      <li>No teams found</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -5,6 +5,7 @@
 <p>Description: {{ task.description }}</p>
 <span><strong>Due Date: </strong>{{ task.deadline }}</span>
 
+<<<<<<< HEAD
 <!--check if has time-->
 {% if task.time_left %}
 {% if task.time_left.days >= 0 %}
@@ -12,6 +13,15 @@
   {{ hours_left }} hours
   {{ minutes_left }} minutes
 </span>
+=======
+  <!--check if has time-->
+  {% if time_left %}
+  {% if days_left >= 0 %}
+    <span><strong>Time Remaining:</strong> {{ days_left }} days
+      {{ hours_left }} hours
+      {{ minutes_left }} minutes
+    </span>
+>>>>>>> main
 
 {% else %}
 <span><strong>Time Remaining:</strong> Expired</span>

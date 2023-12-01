@@ -1,5 +1,6 @@
 {% extends 'dashboard.html' %}
 {% block content %}
+<<<<<<< HEAD
 <h2>My Tasks</h2>
 <ul>
   {% for task in tasks %}
@@ -8,4 +9,16 @@
   <li><a href="{% url 'task_detail' task.id %}">{{ task.name }}</a></li>
   {% endfor %}
 </ul>
+=======
+  <h2>My Tasks</h2>
+  <ul>
+    {% for task in task_list %}
+    <span class="task-number">{{ forloop.counter }}.</span>
+<!--    add task counter-->
+      <li><a href="{% url 'task_detail' task.name %}">{{ task.name }}</a></li>
+    {% empty %}
+      <li>No tasks found</li>
+    {% endfor %}
+  </ul>
+>>>>>>> main
 {% endblock %}

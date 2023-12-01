@@ -41,6 +41,26 @@ class User(AbstractUser):
         
         return self.gravatar(size=60)
 
+
+class Team(models.Model):
+    """Model used to represent a team, namely its name and members"""
+
+    team_name = models.CharField(max_length=50,unique=True, blank=False, primary_key=True)
+    team_members = models.ManyToManyField(User, related_name='teams', blank=False)
+    team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+    def invite_member(self,user):
+        """method to invite user to team"""
+        self.team_members.add(user)
+
+    def remove_member(self, user):
+        """method to remove user from team"""
+        self.team_members.remove(user)
+
+    def __str__(self):
+        return self.team_name
+
+
 class Task(models.Model):
     """Model used for tasks."""
 
@@ -56,17 +76,13 @@ class Task(models.Model):
     description = models.CharField(max_length=5000, blank=False)
     deadline = models.DateTimeField(blank=False)
     priority = models.IntegerField(choices=Priority.choices, blank=False, default=Priority.MEDIUM)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=False)
+    members = models.ManyToManyField(User, related_name='assigned_members', blank=False)
 
     def __str__(self):
         return self.name
 
-class Team(models.Model):
-    """Model used to represent a team, namely its name and members"""
-
-    team_name = models.CharField(max_length=50,unique=True, blank=False, primary_key=True)
-    team_members = models.ManyToManyField(User, related_name='teams', blank=False)
-    team_admin = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 
 class Notification(models.Model):

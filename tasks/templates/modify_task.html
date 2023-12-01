@@ -6,10 +6,18 @@
             <h1>Modify Task</h1>
             <form action="{% url 'modify_task' task.id %}" method="post">
                 {% csrf_token %}
+<<<<<<< HEAD
                 {% include 'partials/bootstrap_form.html' with form=form %}
+=======
+                {% inlude 'partials/bootstrap_form.html' with form=form %}
+>>>>>>> main
                 <input type="submit" value="Save Changes" class="btn btn-primary">
             </form>
         </div>
     </div>
+<<<<<<< HEAD
 </div>
 {% endblock %}
+=======
+</div>
+>>>>>>> main

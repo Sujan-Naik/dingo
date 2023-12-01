@@ -7,6 +7,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
+<<<<<<< HEAD
 from django.db import models
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
@@ -20,6 +21,18 @@ from .signals import task_created_handler
 from .signals import task_completed_handler
 from .signals import task_deleted_handler
 from .signals import task_updated_handler
+=======
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
+from django.views import View
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.urls import reverse, reverse_lazy
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, ModifyTaskForm
+from tasks.helpers import login_prohibited
+from .models import Task, Team, User
+>>>>>>> main
 
 
 @login_required
@@ -36,40 +49,107 @@ def home(request):
 
     return render(request, 'home.html')
 
+class TaskListView(LoginRequiredMixin, ListView):
+    """view the task list"""
+    model = Task
+    template_name = 'task_list.html'
+    context_object_name = 'task_list'
 
-def task_list(request):
-    """Show the task list in the dashboard"""
-    tasks = Task.objects.filter(author=request.user)
-    return render(request, 'task_list.html', {'tasks': tasks})
+    def get_queryset(self):
+        """Filter tasks based on the logged-in user"""
+        return Task.objects.filter(author=self.request.user)
 
+class TaskDetailView(LoginRequiredMixin, DetailView):
+    """view the task detail"""
+    model = Task
+    template_name = 'task_detail.html'
+    context_object_name = 'task'
 
+<<<<<<< HEAD
 def task_detail(request, pk):
     """Show the task details in task list"""
     task = get_object_or_404(Task, pk=pk)
     now = timezone.now()
     # curent time
+=======
+    def get_object(self, queryset=None):
+        """get the current task"""
+        return get_object_or_404(Task, name=self.kwargs['name'])
+>>>>>>> main
 
-    time_left = task.deadline - now
-    task.time_left = time_left
-    # calculate the time left in days hours and minutes
-    if time_left:
-        days_left = task.time_left.days
-        hours_left = task.time_left.seconds // 3600
-        minutes_left = (task.time_left.seconds % 3600) // 60
-    else:
-        days = 0
-        hours = 0
-        minutes = 0
+    def get_context_data(self, **kwargs):
+        """generate the details of current task and show them in task_detail.html"""
+        context = super().get_context_data(**kwargs)
+        now = timezone.now()
+        time_left = context['task'].deadline - now
+        if time_left :
+            context['time_left'] = 1;
+            context['days_left'] = time_left.days
+            context['hours_left'] = time_left.seconds // 3600
+            context['minutes_left'] = (time_left.seconds % 3600) // 60
+        else:
+            context['time_left'] = 0;
+            context['days_left'] = 0
+            context['hours_left'] = 0
+            context['minutes_left'] = 0
 
-    # combine them
-    time_remaining = {
-        'task': task,
-        'days_left' : days_left,
-        'hours_left' : hours_left,
-        'minutes_left' : minutes_left,
-    }
-    return render(request, 'task_detail.html', time_remaining)
+        return context
 
+class TeamListView(LoginRequiredMixin, ListView):
+    """view the team list"""
+    model = Team
+    template_name = 'team_list.html'
+    context_object_name = 'team_list'
+
+    def get_queryset(self):
+        """Filter teams based on the logged-in user"""
+        return Team.objects.filter(team_members=self.request.user)
+
+class TeamDetailView(LoginRequiredMixin, DetailView):
+    """view the task detail"""
+    model = Team
+    template_name = 'team_detail.html'
+    context_object_name = 'team'
+
+    def get_object(self, queryset=None):
+        """get the current task"""
+        return get_object_or_404(Team, team_name=self.kwargs['team_name'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['all_users'] = User.objects.all()
+        context['invite_form'] = InviteMemberForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        team = self.get_object()
+        action = request.POST.get('action')
+
+        if action == 'invite':
+            form = InviteMemberForm(request.POST, instance=team)
+            users_to_invite = request.POST.getlist('username')
+            if form.is_valid():
+                # users_to_invite = form.cleaned_data.get('team_members')
+                for username in users_to_invite:
+                    user = User.objects.get(username=username)
+                # check if the user is already in the team
+                    if user in team.team_members.all():
+                        messages.error(request, f'{user.username} is already in the team.')
+                    else:
+                        team.team_members.add(user)
+                        messages.success(request, f'Successfully invite {user.username}.')
+
+        elif action == 'remove':
+            username = request.POST.get('username')
+            user_to_remove = get_object_or_404(User, username=username)
+
+            if request.user == team.team_admin:
+                team.team_members.remove(user_to_remove)
+                messages.success(request, f'{user_to_remove.username} is removed from the team.')
+            else:
+                messages.error(request, 'You do not have permission to remove member')
+
+        return HttpResponseRedirect(reverse('team_detail', kwargs={'team_name': team.team_name}))
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -244,7 +324,10 @@ class TeamView(LoginRequiredMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
+<<<<<<< HEAD
     
+=======
+>>>>>>> main
 
 
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
@@ -255,6 +338,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
+<<<<<<< HEAD
 
         if task.author != self.request.user:
             messages.error(self.request, "You do not have permission to modify this task")
@@ -264,11 +348,20 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     
     def form_valid(self, form):
         # self.object = form.save()
+=======
+        return Task
+    
+    def form_valid(self, form):
+>>>>>>> main
         form.instance.author = self.request.user
         return super().form_valid(form)
     
     def get_success_url(self):
+<<<<<<< HEAD
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Succesfuly")
+=======
+        messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
+>>>>>>> main
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
 
@@ -281,9 +374,12 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
         return reverse_lazy(task_list)
+<<<<<<< HEAD
 
     
 
 
 
 
+=======
+>>>>>>> main
