@@ -33,5 +33,8 @@ urlpatterns = [
     path('tasks/<str:name>', views.TaskDetailView.as_view(), name='task_detail'),
     path('teams/', views.TeamListView.as_view(), name='team_list'),
     path('teams/<str:team_name>', views.TeamDetailView.as_view(), name='team_detail'),
-    path('timeline/', views.TimelineView.as_view(), name='timeline')
+    path('timeline/', views.TimelineView.as_view(), name='timeline'),
+    path('timeline/<int:year>/', views.TimelineYearView.as_view(), name='timeline_year'),
+    path('timeline/<int:year>/<int:month>/', views.TimelineMonthView.as_view(), name='timeline_month')
+
 ]

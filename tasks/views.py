@@ -11,7 +11,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.views import View
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
@@ -34,6 +34,7 @@ def home(request):
 
     return render(request, 'home.html')
 
+
 class TaskListView(LoginRequiredMixin, ListView):
     """view the task list"""
     model = Task
@@ -43,6 +44,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Filter tasks based on the logged-in user"""
         return Task.objects.filter(author=self.request.user)
+
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
@@ -59,7 +61,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         now = timezone.now()
         time_left = context['task'].deadline - now
-        if time_left :
+        if time_left:
             context['time_left'] = 1;
             context['days_left'] = time_left.days
             context['hours_left'] = time_left.seconds // 3600
@@ -72,6 +74,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
         return context
 
+
 class TeamListView(LoginRequiredMixin, ListView):
     """view the team list"""
     model = Team
@@ -81,6 +84,7 @@ class TeamListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Filter teams based on the logged-in user"""
         return Team.objects.filter(team_members=self.request.user)
+
 
 class TeamDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
@@ -109,7 +113,7 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
                 # users_to_invite = form.cleaned_data.get('team_members')
                 for username in users_to_invite:
                     user = User.objects.get(username=username)
-                # check if the user is already in the team
+                    # check if the user is already in the team
                     if user in team.team_members.all():
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
@@ -127,6 +131,7 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
                 messages.error(request, 'You do not have permission to remove member')
 
         return HttpResponseRedirect(reverse('team_detail', kwargs={'team_name': team.team_name}))
+
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -303,12 +308,32 @@ class TeamView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
 
 
-class TimelineView(LoginRequiredMixin, ListView):
-    model = Task
+class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
     template_name = ('timeline.html')
-    def get_context_data(self, *, object_list=None, **kwargs):
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
-        html_calendar = calendar.formatmonth(theyear=timezone.now().year,themonth=timezone.now().month)
+        html_calendar = calendar.returnHTMLPages()
+        context["timeline_calendar"] = mark_safe(html_calendar)
+        return context
+
+class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
+    template_name = ('timeline.html')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        calendar = Timeline(self.request.user)
+        html_calendar = calendar.formatyear(self.kwargs['year'])
+        context["timeline_calendar"] = mark_safe(html_calendar)
+        return context
+
+class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
+    template_name = ('timeline.html')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        calendar = Timeline(self.request.user)
+        html_calendar = calendar.formatmonth(self.kwargs['year'], self.kwargs['month'])
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context

@@ -22,19 +22,40 @@ class Timeline(HTMLCalendar):
         html = f'{day}<div class="col-6">'
         for task in day_tasks:
             html += f'<div class="row"> {task.name} </div>'
-
         html += '</div>'
         return html
 
-    def formatmonth(self, theyear, themonth, withyear=True):
-        self.current_year = theyear
+    def formatmonth(self, year, themonth, withyear=True):
+        self.current_year = year
         self.current_month = themonth
         html = '<div class="col-12"> '
-        for day in range(1,monthrange(theyear, themonth)[1],1):
-            html += self.formatday(day, datetime.datetime(theyear, themonth, day).weekday())
+
+        for day in range(1,monthrange(year, themonth)[1],1):
+
+            html += self.formatday(day, datetime.datetime(year, themonth, day).weekday())
         html += '</div>'
         return html
 
 
-    def formatyear(self, theyear, width=12):
-        return f"{theyear}"
+    def formatyear(self, year, width=12):
+        html = '<div class="container">'
+        pagination = '<nav aria-label ="Year navigation"> <ul class "pagination">'
+        for month in range(1, 12):
+            html += '<div class="col-2">'
+            pagination += f'<li class="page-item"><a href="/timeline/{year}/{month}">Month {month}</a> </li>'
+            html += self.formatmonth(year,month)
+            html += '</div>'
+        html += '</div>'
+        pagination += '</ul> </nav>'
+        return pagination+html
+
+    def returnHTMLPages(self):
+        oldest_date = 2020
+        years_displayed = 20
+        pagination = '<nav aria-label ="Year navigation"> <ul class "pagination">'
+        html = ""
+        for year in range(1,years_displayed):
+            pagination += f'<li class="page-item"><a href="/timeline/{year}/">Year {year}</a> </li>'
+            html += self.formatyear(oldest_date+year)
+        pagination += '</ul> </nav>'
+        return pagination + html
