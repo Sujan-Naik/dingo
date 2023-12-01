@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView, UpdateView
@@ -307,8 +308,7 @@ class TimelineView(LoginRequiredMixin, ListView):
     template_name = ('timeline.html')
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["now"] = timezone.now()
-        calendar = Timeline()
-        html_calendar = calendar.formatyear(theyear=2023,width=1)
-        context["timeline_calendar"] = html_calendar
+        calendar = Timeline(self.request.user)
+        html_calendar = calendar.formatmonth(theyear=timezone.now().year,themonth=timezone.now().month)
+        context["timeline_calendar"] = mark_safe(html_calendar)
         return context
