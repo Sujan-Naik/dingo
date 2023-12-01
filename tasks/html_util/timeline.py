@@ -10,8 +10,7 @@ class Timeline(HTMLCalendar):
 
     def __init__(self, user):
 
-        self.tasks = Task.objects.all()
-        #self.tasks = user.task_set.values_list('name', 'deadline')
+        self.tasks = user.task_set.all()
         super(HTMLCalendar, self).__init__()
 
     def formatday(self, day, weekday):
