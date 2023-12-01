@@ -50,7 +50,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         """get the current task"""
-        return get_object_or_404(Task, name=self.kwargs['name'])
+        return get_object_or_404(Task, id=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         """generate the details of current task and show them in task_detail.html"""
@@ -58,12 +58,12 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         now = timezone.now()
         time_left = context['task'].deadline - now
         if time_left :
-            context['time_left'] = 1;
+            context['time_left'] = 1
             context['days_left'] = time_left.days
             context['hours_left'] = time_left.seconds // 3600
             context['minutes_left'] = (time_left.seconds % 3600) // 60
         else:
-            context['time_left'] = 0;
+            context['time_left'] = 0
             context['days_left'] = 0
             context['hours_left'] = 0
             context['minutes_left'] = 0
@@ -309,7 +309,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
-        return Task
+        return task
     
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -328,4 +328,4 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
-        return reverse_lazy(task_list)
+        return reverse_lazy('task_list')

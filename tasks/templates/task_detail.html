@@ -1,25 +1,34 @@
 {% extends 'task_list.html' %}
 
 {% block content %}
-  <h2>{{ task.name }}</h2>
-  <p>Description: {{ task.description }}</p>
+<h2>{{ task.name }}</h2>
+<p>Description: {{ task.description }}</p>
 <span><strong>Due Date: </strong>{{ task.deadline }}</span>
 
-  <!--check if has time-->
-  {% if time_left %}
-  {% if days_left >= 0 %}
-    <span><strong>Time Remaining:</strong> {{ days_left }} days
-      {{ hours_left }} hours
-      {{ minutes_left }} minutes
-    </span>
+<!--check if has time-->
+{% if time_left %}
+{% if days_left >= 0 %}
+<span><strong>Time Remaining:</strong> {{ days_left }} days
+  {{ hours_left }} hours
+  {{ minutes_left }} minutes
+</span>
 
-  {% else %}
-    <span><strong>Time Remaining:</strong> Expired</span>
-  {% endif %}
 {% else %}
-    <span><strong>Time Remaining:</strong> Expired</span>
-  {% endif %}
+<span><strong>Time Remaining:</strong> Expired</span>
+{% endif %}
+{% else %}
+<span><strong>Time Remaining:</strong> Expired</span>
+{% endif %}
 
-  <p>Author: {{ task.author }}</p>
+<p>Author: {{ task.author }}</p>
+
+<!-- Add buttons for modify and delete -->
+<div>
+  <a href="{% url 'modify_task' task.id %}">
+    <button>Modify Task</button>
+  </a>
+  <a href="{% url 'delete' task.id %}">
+    <button>Delete Task</button>
+  </a>
+</div>
 {% endblock %}
-

@@ -245,14 +245,14 @@ class ModifyTaskForm(forms.ModelForm):
         model = Task
         fields = ['name', 'description', 'deadline', 'priority']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'class':'form control', 'type':'datetime-local'})
+            'deadline': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'})
         }
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def clean_deadline(self):
-        deadline_datetime = self.cleaned_data('deadline')
+        deadline_datetime = self.cleaned_data.get('deadline')
 
         if deadline_datetime < timezone.now():
             raise forms.ValidationError("Deadline is Invalid")
