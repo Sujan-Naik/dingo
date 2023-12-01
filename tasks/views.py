@@ -15,6 +15,7 @@ from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
 from tasks.helpers import login_prohibited
+from .html_util.timeline import Timeline
 from .models import Task, Team, User
 
 
@@ -299,3 +300,15 @@ class TeamView(LoginRequiredMixin, FormView):
     def form_invalid(self, form):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
+
+
+class TimelineView(LoginRequiredMixin, ListView):
+    model = Task
+    template_name = ('timeline.html')
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["now"] = timezone.now()
+        calendar = Timeline()
+        html_calendar = calendar.formatyear(theyear=2023,width=1)
+        context["timeline_calendar"] = html_calendar
+        return context
