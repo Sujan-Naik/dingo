@@ -12,9 +12,9 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
-from django.views.generic.edit import FormView, UpdateView
-from django.urls import reverse
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm
+from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.urls import reverse, reverse_lazy
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, ModifyTaskForm
 from tasks.helpers import login_prohibited
 from .html_util.timeline import Timeline
 from .models import Task, Team, User
@@ -54,20 +54,21 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         """get the current task"""
-        return get_object_or_404(Task, name=self.kwargs['name'])
+        return get_object_or_404(Task, id=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         """generate the details of current task and show them in task_detail.html"""
         context = super().get_context_data(**kwargs)
         now = timezone.now()
         time_left = context['task'].deadline - now
-        if time_left:
-            context['time_left'] = 1;
+        if time_left :
+            context['time_left'] = 1
+
             context['days_left'] = time_left.days
             context['hours_left'] = time_left.seconds // 3600
             context['minutes_left'] = (time_left.seconds % 3600) // 60
         else:
-            context['time_left'] = 0;
+            context['time_left'] = 0
             context['days_left'] = 0
             context['hours_left'] = 0
             context['minutes_left'] = 0
@@ -307,7 +308,6 @@ class TeamView(LoginRequiredMixin, FormView):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
 
-
 class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
     template_name = ('timeline.html')
 
@@ -337,3 +337,32 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         html_calendar = calendar.formatmonth(self.kwargs['year'], self.kwargs['month'])
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
+
+class ModifyTaskView(LoginRequiredMixin, UpdateView):
+
+    model = Task
+    template_name = "modify_task.html"
+    form_class = ModifyTaskForm
+
+    def get_object(self, queryset=None):
+        task = super().get_object(queryset=queryset)
+        return task
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
+        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    
+
+class DeleteTaskView(LoginRequiredMixin, DeleteView):
+
+    model = Task
+    template_name = "tasks/delete.html"
+    context_object_name = 'task'
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
+        return reverse_lazy('task_list')
