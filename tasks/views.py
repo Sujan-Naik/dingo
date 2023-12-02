@@ -39,11 +39,16 @@ class TaskListView(LoginRequiredMixin, ListView):
     context_object_name = 'task_list'
 
     def get_queryset(self):
-        """Filter tasks based on the logged-in user"""
-        sort_by = self.request.GET.get("s", "deadline") # default sort is by deadline
-        filter_by = self.request.GET.get("fp", "name") + "__icontains" # default filter is by name
-        filter_string = self.request.GET.get("fs", "")
-        return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
+        """Filter tasks based on the logged-in user + sort criteria"""
+        form = TaskSortForm(self.request.GET)
+        if form.is_valid():
+            sort_by = form.cleaned_data.get("asc_or_desc", "") + form.cleaned_data.get("sort_by")
+            filter_by = self.request.GET.get("filter_by") + "__icontains"
+            filter_string = self.request.GET.get("filter_string", "")
+            return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
+        else:
+            # If sort criteria is malformed use default sort
+            return Task.objects.filter(author=self.request.user).order_by("deadline")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -51,11 +56,12 @@ class TaskListView(LoginRequiredMixin, ListView):
         return context
 
     def post(self, request, *args, **kwargs):
-        """Deal with sorting + filtering"""
-        sort = request.POST.get('asc_or_desc', "") + request.POST.get('sort_by')
-        filter_property = request.POST.get('filter_by')
+        """Add sort criteria into url params"""
+        sort_by = request.POST.get('sort_by')
+        asc_or_desc = request.POST.get('asc_or_desc')
+        filter_by = request.POST.get('filter_by')
         filter_string = request.POST.get('filter_string')
-        return HttpResponseRedirect(reverse('task_list') + f"?s={sort}&fp={filter_property}&fs={filter_string}")
+        return HttpResponseRedirect(reverse('task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
