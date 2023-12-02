@@ -97,3 +97,14 @@ class Task(models.Model):
     def __str__(self):
         return self.name
 
+    
+
+class Notifications(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_receieved')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', default=1)
+    message = models.TextField(max_length=100, blank=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=False)
+
+
+

@@ -39,20 +39,20 @@ class TaskDetailViewTest(TestCase):
 
     def test_task_details_view(self):
         self.client.login(username=self.user.username, password='Password123')
-        task = Task.objects.get(id=10)
-        response = self.client.get(reverse('task_detail', args=[task.name]))
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.id]))
         self.assertEqual(response.status_code, 200)
 
     def test_task_details_template(self):
         self.client.login(username=self.user.username, password='Password123')
-        task = Task.objects.get(id=10)
-        response = self.client.get(reverse('task_detail', args=[task.name]))
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.id]))
         self.assertTemplateUsed(response, 'task_detail.html')
 
     def test_task_details_view_task(self):
         self.client.login(username=self.user.username, password='Password123')
-        task = Task.objects.get(id=10)
-        response = self.client.get(reverse('task_detail', args=[task.name]))
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail',args=[task.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, task.name)
         self.assertContains(response, task.description)
