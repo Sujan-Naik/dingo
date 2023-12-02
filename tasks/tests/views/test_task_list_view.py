@@ -6,6 +6,7 @@ from django.urls import reverse
 from tasks.models import Task, User, Team
 from datetime import datetime
 
+
 class TaskListTestCase(TestCase):
     """Tests of the task list view."""
 
@@ -30,12 +31,13 @@ class TaskListTestCase(TestCase):
             'members': [self.user.pk]
         }
 
-        new_task = Task.objects.create(name = self.form_input['name'],
-                            description = self.form_input['description'],
-                            deadline = self.form_input['deadline'],
-                            priority = self.form_input['priority'],
-                            author = self.form_input['author'],
-                            team=self.form_input['team'])
+        new_task = Task.objects.create(name=self.form_input['name'],
+                                       description=self.form_input['description'],
+                                       deadline=self.form_input['deadline'],
+                                       priority=self.form_input['priority'],
+                                       author=self.form_input['author'],
+                                       team=self.form_input['team'],
+                                       id=10)
 
         new_task.members.set(self.form_input['members'])
 
@@ -43,27 +45,18 @@ class TaskListTestCase(TestCase):
     def test_task_list_view(self):
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('task_list'))
-        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.status_code, 200)
 
     # test if the template is correct
     def test_template(self):
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('task_list'))
-        self.assertTemplateUsed(response,'task_list.html')
+        self.assertTemplateUsed(response, 'task_list.html')
 
     # test if the list can show the correct task
     def test_task_list_show_task(self):
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('task_list'))
-        task = Task.objects.get(name='Test')
+        task = Task.objects.get(id=10)
         self.assertContains(response, task.name)
-
-    # test if no task to show
-    # def test_no_task(self):
-    #     pass
-
-    # test if has many tasks to show, the number of tasks
-    # def test_task_number(self):
-    #     pass
-
 
