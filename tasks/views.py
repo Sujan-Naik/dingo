@@ -40,9 +40,10 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user"""
-        sort_by = self.request.GET.get("sort", "deadline")
-        filter_by = self.request.GET.get("filter", "")
-        return Task.objects.filter(author=self.request.user, name__icontains=filter_by).order_by(sort_by)
+        sort_by = self.request.GET.get("s", "deadline") # default sort is by deadline
+        filter_by = self.request.GET.get("fp", "name") + "__icontains" # default filter is by name
+        filter_string = self.request.GET.get("fs", "")
+        return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -51,7 +52,10 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def post(self, request, *args, **kwargs):
         """Deal with sorting + filtering"""
-        return HttpResponseRedirect(reverse('task_list') + f"?sort={request.POST.get('sort_by')}&filter={request.POST.get('filter_by')}")
+        sort = request.POST.get('asc_or_desc', "") + request.POST.get('sort_by')
+        filter_property = request.POST.get('filter_by')
+        filter_string = request.POST.get('filter_string')
+        return HttpResponseRedirect(reverse('task_list') + f"?s={sort}&fp={filter_property}&fs={filter_string}")
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""

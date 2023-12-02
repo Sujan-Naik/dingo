@@ -216,5 +216,19 @@ class InviteMemberForm(forms.ModelForm):
 
 class TaskSortForm(forms.Form):
     """Form to allow for sorting + filtering of the task list"""
-    sort_by = forms.CharField()
-    filter_by = forms.CharField()
+    sorting_choices = [
+        ("deadline", "Deadline"),
+        ("name", "Name"),
+        ("priority", "Priority"),
+        ("author__username", "Author Username")
+    ]
+    filter_choices = [
+        ("name", "Name"),
+        ("description", "Description"),
+        ("author__username", "Author Username")
+    ]
+
+    sort_by = forms.ChoiceField(choices=sorting_choices)
+    asc_or_desc = forms.ChoiceField(choices=[("","^"),("-","V")], required=False)
+    filter_by = forms.ChoiceField(choices=filter_choices)
+    filter_string = forms.CharField(required=False)
