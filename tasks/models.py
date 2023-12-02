@@ -60,19 +60,6 @@ class Team(models.Model):
     def __str__(self):
         return self.team_name
 
-class TimeLogging(models.Model):
-    """record how many time a user spent on a task"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    duration = models.DurationField()
-
-    def save(self, *args, **kwargs):
-        # Calculate duration before saving
-        self.duration = self.end_time - self.start_time
-        super().save(*args, **kwargs)
-
 
 class Task(models.Model):
     """Model used for tasks."""
@@ -92,7 +79,6 @@ class Task(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=False)
     members = models.ManyToManyField(User, related_name='assigned_members', blank=False)
-    time_logging = models.ManyToManyField(TimeLogging, related_name='task_time_logging')
 
     def __str__(self):
         return self.name
@@ -105,6 +91,22 @@ class Notifications(models.Model):
     message = models.TextField(max_length=100, blank=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=False)
+
+
+class TimeLogging(models.Model):
+    """record how many time a user spent on a task"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    duration = models.DurationField()
+
+    def save(self, *args, **kwargs):
+        # Calculate duration before saving
+        if self.start_time and self.end_time:
+            self.duration = self.end_time - self.start_time
+            self.duration_minutes = self.duration.total_seconds() // 60
+            super().save(*args, **kwargs)
 
 
 

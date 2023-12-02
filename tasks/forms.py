@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import User, Task, Team
+from .models import User, Task, Team, TimeLogging
 
 
 class LogInForm(forms.Form):
@@ -268,6 +268,21 @@ class ModifyTaskForm(forms.ModelForm):
 
 
 
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeLogging
+        fields = ['start_time', 'end_time']
 
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        help_text='Format: YYYY-MM-DDTHH:MM'
+    )
+
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        help_text='Format: YYYY-MM-DDTHH:MM'
+    )
 
 

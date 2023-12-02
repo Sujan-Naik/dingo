@@ -22,6 +22,21 @@
 
 <p>Author: {{ task.author }}</p>
 
+<ul>
+    {% for time in time_loggings %}
+        <li>{{ time.user.username }} spent {{ time.spent_days}} days,
+            {{ time.spent_hours }} hours,
+            {{ time.spent_minutes }} minutes,
+            on {{ time.start_time }} to {{ time.end_time }}</li>
+    {% endfor %}
+</ul>
+
+<form method="post" action="{% url 'time_logging' task.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Log Time</button>
+</form>
+
 <!-- Add buttons for modify and delete -->
 <div>
   <a href="{% url 'modify_task' task.id %}">

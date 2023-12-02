@@ -13,9 +13,10 @@ from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, ModifyTaskForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, \
+    ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
-from .models import Task, Team, User
+from .models import Task, Team, User, TimeLogging
 
 
 @login_required
@@ -40,7 +41,7 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user"""
-        return Task.objects.filter(author=self.request.user)
+        return Task.objects.filter(members=self.request.user)
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
@@ -57,6 +58,16 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         now = timezone.now()
         time_left = context['task'].deadline - now
+        time_loggings = TimeLogging.objects.filter(task=context['task'])
+
+
+        for time_entry in time_loggings:
+            time_entry.spent_days = (time_entry.end_time - time_entry.start_time).days
+            time_entry.spent_hours, remainder = divmod((time_entry.end_time - time_entry.start_time).seconds, 3600)
+            time_entry.spent_minutes = remainder // 60
+
+        context['time_loggings'] = time_loggings;
+
         if time_left :
             context['time_left'] = 1
             context['days_left'] = time_left.days
@@ -69,6 +80,28 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
             context['minutes_left'] = 0
 
         return context
+
+    def post(self,request,*args, **kwargs):
+        task = self.get_object()
+
+        context = {
+            'task':task
+        }
+        if request.method == 'POST':
+            form = TimeEntryForm(request.POST)
+            if form.is_valid():
+                time_logging = form.save(commit=False)
+                time_logging.user = request.user
+                time_logging.task = task
+                time_logging.save()
+
+                return redirect('task_detail', pk=task.id)
+        else:
+            form = TimeEntryForm()
+
+        context['form'] = form
+        return render(request, 'time_logging.html', context)
+
 
 class TeamListView(LoginRequiredMixin, ListView):
     """view the team list"""
@@ -329,3 +362,5 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
         return reverse_lazy('task_list')
+
+
