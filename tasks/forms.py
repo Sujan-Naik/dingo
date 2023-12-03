@@ -114,12 +114,13 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         return user
 
 
-class CreateTaskForm(forms.ModelForm):
-    """Form enabling registered users to create tasks."""
+class CreateTaskForm1(forms.ModelForm):
+    """First page of a form that creates a task"""
+
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description', 'deadline', 'team', 'members', 'priority']
+        fields = ['name', 'description', 'deadline', 'team', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
@@ -129,57 +130,67 @@ class CreateTaskForm(forms.ModelForm):
 
     name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
-    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
-
-    members = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(),
-        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"})
-    )
+    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices,
+                                 initial=Task.Priority.MEDIUM)
 
     def __init__(self, user=None, **kwargs):
-        """Construct new form instance with a user instance."""
+        """Construct a new form instance with a user instance."""
 
         super().__init__(**kwargs)
         self.user = user
+        """Makes the team field only show the user's teams as options"""
         self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
-                                      queryset=Team.objects.filter(team_members__in=[self.user]))
-        '''self.fields['members'] = forms.ModelMultipleChoiceField(
-            queryset=Team.objects.filter(team_members__in=[self.user]).values('team_name'),
-            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))'''
+                                                     queryset=Team.objects.filter(team_members__in=[self.user]))
+
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
         super().clean()
         deadline_datetime = self.cleaned_data.get('deadline')
-        """Sends error if deadline time has already passed"""
+        """Sends an error if deadline time has already passed"""
         if deadline_datetime <= timezone.now():
             self.add_error('deadline', "Deadline is invalid")
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
 
-        team = self.cleaned_data.get('team')
+
+class CreateTaskForm2(forms.ModelForm):
+    """Second page of a form that creates a task"""
+
+    class Meta:
+        """Form options."""
+        model = Task
+        fields = ['members']
+
+    def __init__(self, user=None, team=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+        self.team = team
+
+        self.fields['members'] = forms.ModelMultipleChoiceField(
+            queryset= team.team_members.all(),
+            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+        self.fields['members'].label = "Assign Members"
+
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+
+        super().clean()
+        if self.user is None:
+            self.add_error(None, "You must be logged in first!")
+
+        """Ensures at least one team member is selected"""
         members = self.cleaned_data.get('members')
         if members is None:
             self.add_error('members', "Select at least one team member!")
         else:
+            """Checks if all members chosen are in the selected team"""
             for member in members:
-                if not team in member.teams.all():
+                if not self.team in member.teams.all():
                     self.add_error('members', "Members must be in the specified team!")
                     break
-
-    def save(self):
-        """Create a new task."""
-        super().save(commit=False)
-        task_name = self.cleaned_data.get("name")
-        task_description = self.cleaned_data.get("description")
-        task_deadline = self.cleaned_data.get("deadline")
-        task_team = self.cleaned_data.get("team")
-        task_priority = self.cleaned_data.get("priority")
-        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
-                    author=self.user, team=task_team)
-        task.save()
-        task.members.set(self.cleaned_data.get('members'))
-        return task
 
 
 class TeamCreateForm(forms.ModelForm):

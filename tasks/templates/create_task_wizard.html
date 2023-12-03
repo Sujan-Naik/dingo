@@ -1,0 +1,36 @@
+{# Edited from django-formtools documentation for form wizard #}
+{% extends 'base_content.html' %}
+{% load i18n %}
+
+{% block head %}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+
+                <h1>Create Task</h1>
+                <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+                <form action="" method="post">{% csrf_token %}
+                    {{ wizard.management_form }}
+                    {% if wizard.form.forms %}
+                        {{ wizard.form.management_form }}
+                        {% for form in wizard.form.forms %}
+                            {{ form.as_p }}
+                        {% endfor %}
+                    {% else %}
+                        {{ wizard.form.as_p }}
+                    {% endif %}
+                    {% if wizard.steps.prev %}
+                        <button name="wizard_goto_step" class="btn btn-primary" type="submit"
+                                value="{{ wizard.steps.prev }}">{% translate "Previous" %} </button>
+                    {% endif %}
+                    <input type="Submit" value="{% translate "Submit" %}" class="btn btn-primary"/>
+                </form>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
