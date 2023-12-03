@@ -169,9 +169,15 @@ class CreateTaskForm2(forms.ModelForm):
         self.user = user
         self.team = team
 
-        self.fields['members'] = forms.ModelMultipleChoiceField(
-            queryset= team.team_members.all(),
-            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+        if self.team is not None:
+            self.fields['members'] = forms.ModelMultipleChoiceField(
+                queryset=team.team_members.all(),
+                widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+        else:
+            self.fields['members'] = forms.ModelMultipleChoiceField(
+                queryset=User.objects.none(),
+                widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+
         self.fields['members'].label = "Assign Members"
 
     def clean(self):
@@ -180,6 +186,9 @@ class CreateTaskForm2(forms.ModelForm):
         super().clean()
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
+
+        if self.team is None:
+            self.add_error(None, "You must be select a team in the previous page first!")
 
         """Ensures at least one team member is selected"""
         members = self.cleaned_data.get('members')
