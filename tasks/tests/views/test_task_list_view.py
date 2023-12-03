@@ -54,11 +54,13 @@ class TaskListTestCase(TestCase):
     def test_valid_sort(self):
         """Test if the page is correctly returned with a valid sort condition"""
         self.client.login(username=self.user.username, password='Password123')
-        sort_conditions = "?sort_by=deadline%asc_or_desc=-&filter_by=name&filter_string=test"
+        sort_conditions = "?sort_by=deadline&asc_or_desc=-&filter_by=name&filter_string=testing"
         response = self.client.get(reverse('task_list') + sort_conditions)
         self.assertEqual(response.status_code,200)
         self.assertTemplateUsed(response,'task_list.html')
-    
+        num_tasks = len(response.context['task_list'])
+        self.assertEqual(num_tasks,1)
+
     def test_invalid_sort(self):
         """Test if the page is correctly returned with an invalid sort condition"""
         self.client.login(username=self.user.username, password='Password123')
@@ -66,13 +68,16 @@ class TaskListTestCase(TestCase):
         response = self.client.get(reverse('task_list') + sort_conditions)
         self.assertEqual(response.status_code,200)
         self.assertTemplateUsed(response,'task_list.html')
+        num_tasks = len(response.context['task_list'])
+        self.assertEqual(num_tasks,2)
+
+    def test_task_number(self):
+        """Test that the correct number of tasks is displayed with no sort criteria"""
+        self.client.login(username=self.user.username, password='Password123')
+        response = self.client.get(reverse('task_list'))
+        num_tasks = len(response.context['task_list'])
+        self.assertEqual(num_tasks,2)
 
     # test if no task to show
     # def test_no_task(self):
     #     pass
-
-    # test if has many tasks to show, the number of tasks
-    # def test_task_number(self):
-    #     pass
-
-
