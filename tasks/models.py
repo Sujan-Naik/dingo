@@ -30,7 +30,7 @@ class User(AbstractUser):
         return f'{self.first_name} {self.last_name}'
 
     def gravatar(self, size=120):
-        """Return a URL to the user's gravatar."""
+        """Return a URL to the user's gravatar.i"""
 
         gravatar_object = Gravatar(self.email)
         gravatar_url = gravatar_object.get_image(size=size, default='mp')
@@ -90,7 +90,10 @@ class Notifications(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', default=1)
     message = models.TextField(max_length=100, blank=False)
     timestamp = models.DateTimeField(auto_now_add=True)
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=False)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.sender} to {self.recipient}: {self.message}'
 
 
 class TimeLogging(models.Model):

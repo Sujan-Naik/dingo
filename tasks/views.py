@@ -17,7 +17,7 @@ from django.urls import reverse, reverse_lazy
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, \
     ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
-from .models import Task, Team, User, TimeLogging
+from .models import Task, Team, User, TimeLogging, Notifications
 from .html_util.timeline import Timeline
 
 
@@ -151,6 +151,12 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
                         team.team_members.add(user)
+                        #Create a notification for the invited user
+                        Notifications.objects.create(
+                            recipient = user,
+                            sender = team.team_admin,
+                            message = f'You have been added to the team: {team.team_name}. ',
+                        )
                         messages.success(request, f'Successfully invite {user.username}.')
 
         elif action == 'remove':
@@ -159,6 +165,12 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
 
             if request.user == team.team_admin:
                 team.team_members.remove(user_to_remove)
+                # Create a notification for the removed user
+                Notifications.objects.create(
+                            recipient = user_to_remove,
+                            sender = team.team_admin,
+                            message = f'You have been removed from the team: {team.team_name}. ',
+                        )
                 messages.success(request, f'{user_to_remove.username} is removed from the team.')
             else:
                 messages.error(request, 'You do not have permission to remove member')
@@ -332,6 +344,13 @@ class TeamView(LoginRequiredMixin, FormView):
         """Handle valid form by saving the new team."""
         if form.is_valid():
             form.save()
+            team = form.save()
+            for member in team.team_members.all():
+                Notifications.objects.create(
+                            recipient = member,
+                            sender = team.team_admin,
+                            message = f'You have been added to the team: {team.team_name}. ',
+                        )    
             messages.success(self.request, "Team created!")
             return redirect('dashboard')
         return self.form_invalid(form)
