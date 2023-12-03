@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -99,14 +102,22 @@ class TimeLogging(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.DurationField()
+    duration = models.DurationField(default=timedelta())
+
+    def clean(self):
+        super().clean()
+
+        # Check if start_time is before end_time
+        if self.start_time and self.end_time and self.start_time >= self.end_time:
+            raise ValidationError({'start_time': 'Start time must be before end time.'})
 
     def save(self, *args, **kwargs):
+        self.full_clean()
         # Calculate duration before saving
         if self.start_time and self.end_time:
             self.duration = self.end_time - self.start_time
             self.duration_minutes = self.duration.total_seconds() // 60
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 
