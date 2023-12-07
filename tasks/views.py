@@ -401,21 +401,71 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        for member in self.object.members.all():
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'Task: {self.object.name} has been modified.',
+            )
+
+        return response
     
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
 
-class DeleteTaskView(LoginRequiredMixin, DeleteView):
+# class DeleteTaskView(LoginRequiredMixin, DeleteView):
 
+#     model = Task
+#     template_name = "tasks/delete.html"
+#     context_object_name = 'task'
+
+    # def delete(self, request, *args, **kwargs):
+    #     # Notify assigned members before deleting the task
+        
+    #     for member in self.object.members.all():
+    #         print(f"Creating notification for member: {member.username}")
+    #         Notifications.objects.create(
+    #             recipient=member,
+    #             sender=self.request.user,
+    #             message=f'Task "{self.object.name}" has been deleted.',
+    #         )
+
+    #     # Perform the deletion
+    #     response = super().delete(request, *args, **kwargs)
+
+    #     # Redirect to the success URL
+    #     messages.success(self.request, "Task Deleted Successfully")
+    #     return response
+
+    # def get_success_url(self):
+    #     messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
+    #     return reverse_lazy('task_list')
+    
+class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
     template_name = "tasks/delete.html"
     context_object_name = 'task'
+    success_url = reverse_lazy('task_list')
 
-    def get_success_url(self):
-        messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
-        return reverse_lazy('task_list')
+    def form_valid(self, form):
+        # Notify assigned members before deleting the task
+        for member in self.object.members.all():
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'Task "{self.object.name}" has been deleted.',
+            )
+
+        # Perform the deletion
+        response = super().form_valid(form)
+
+    # Redirect to the success URL
+        messages.success(self.request, "Task Deleted Successfully")
+        return response
+    
 
 
