@@ -4,27 +4,37 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from tasks.forms import CreateTaskForm
-from tasks.models import User, Task
+from tasks.models import User, Task, Team
 from tasks.tests.helpers import reverse_with_next
+
 
 class SignUpViewTestCase(TestCase):
     """Tests of the task creation view."""
 
-    fixtures = ['tasks/tests/fixtures/default_user.json']
+    """ Pre-populates the table with user"""
+    fixtures = \
+        [
+            'tasks/tests/fixtures/default_user.json',
+            'tasks/tests/fixtures/default_team.json'
+        ]
 
     def setUp(self):
         self.url = reverse('create_task')
         self.task_time = timezone.now() + timedelta(days=1)
-        self.form_input = {
-            'name': 'Test',
-            'description': 'This is a test task.',
-            'deadline': self.task_time,
-            'priority': 3
-        }
         self.user = User.objects.get(username='@johndoe')
+        self.team = Team.objects.get(team_name='Default Team')
+        self.form_input = \
+            {
+                'name': 'Test',
+                'description': 'This is a test task.',
+                'deadline': self.task_time,
+                'priority': 3,
+                'team': self.team.pk,
+                'members': [self.user.pk],
+            }
 
     def test_create_task_url(self):
-        self.assertEqual(self.url,'/create_task/')
+        self.assertEqual(self.url, '/create_task/')
 
     def test_get_create_task(self):
         self.client.login(username=self.user.username, password='Password123')
@@ -58,7 +68,7 @@ class SignUpViewTestCase(TestCase):
         before_count = Task.objects.count()
         response = self.client.post(self.url, self.form_input, follow=True)
         after_count = Task.objects.count()
-        self.assertEqual(after_count, before_count+1)
+        self.assertEqual(after_count, before_count + 1)
         response_url = reverse('dashboard')
         self.assertRedirects(response, response_url, status_code=302, target_status_code=200)
         self.assertTemplateUsed(response, 'dashboard.html')

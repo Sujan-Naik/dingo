@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import User, Task, Team
+from .models import User, Task, Team, TimeLogging
 
 
 class LogInForm(forms.Form):
@@ -116,11 +116,10 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 class CreateTaskForm(forms.ModelForm):
     """Form enabling registered users to create tasks."""
-
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description', 'deadline', 'priority']
+        fields = ['name', 'description', 'deadline', 'team', 'members', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
@@ -128,12 +127,25 @@ class CreateTaskForm(forms.ModelForm):
             })
         }
 
+    name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
+
+    members = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"})
+    )
+
     def __init__(self, user=None, **kwargs):
         """Construct new form instance with a user instance."""
 
         super().__init__(**kwargs)
         self.user = user
-
+        self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
+                                      queryset=Team.objects.filter(team_members__in=[self.user]))
+        '''self.fields['members'] = forms.ModelMultipleChoiceField(
+            queryset=Team.objects.filter(team_members__in=[self.user]).values('team_name'),
+            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))'''
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
@@ -145,16 +157,28 @@ class CreateTaskForm(forms.ModelForm):
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
 
+        team = self.cleaned_data.get('team')
+        members = self.cleaned_data.get('members')
+        if members is None:
+            self.add_error('members', "Select at least one team member!")
+        else:
+            for member in members:
+                if not team in member.teams.all():
+                    self.add_error('members', "Members must be in the specified team!")
+                    break
+
     def save(self):
         """Create a new task."""
         super().save(commit=False)
         task_name = self.cleaned_data.get("name")
         task_description = self.cleaned_data.get("description")
         task_deadline = self.cleaned_data.get("deadline")
+        task_team = self.cleaned_data.get("team")
         task_priority = self.cleaned_data.get("priority")
         task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
-                    author=self.user)
+                    author=self.user, team=task_team)
         task.save()
+        task.members.set(self.cleaned_data.get('members'))
         return task
 
 
@@ -232,3 +256,49 @@ class TaskSortForm(forms.Form):
     asc_or_desc = forms.ChoiceField(choices=[("","^"),("-","V")], required=False)
     filter_by = forms.ChoiceField(choices=filter_choices)
     filter_string = forms.CharField(required=False)
+
+class ModifyTaskForm(forms.ModelForm):
+
+    class Meta:
+        model = Task
+        fields = ['name', 'description', 'deadline', 'priority']
+        widgets = {
+            'deadline': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'})
+        }
+
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean_deadline(self):
+        deadline_datetime = self.cleaned_data.get('deadline')
+
+        if deadline_datetime < timezone.now():
+            raise forms.ValidationError("Deadline is Invalid")
+        
+        return deadline_datetime
+    
+    def save(self, commit=True):
+        task = super().save(commit=False)
+        if commit:
+            task.save()
+
+        return task
+
+
+
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeLogging
+        fields = ['start_time', 'end_time']
+
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        help_text='Format: YYYY-MM-DDTHH:MM'
+    )
+
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        help_text='Format: YYYY-MM-DDTHH:MM'
+    )

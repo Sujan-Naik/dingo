@@ -1,0 +1,5 @@
+<form method="post" action="{% url 'task_detail' task.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Log Time</button>
+</form>

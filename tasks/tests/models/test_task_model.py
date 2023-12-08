@@ -8,9 +8,11 @@ from tasks.models import Task, User
 class TaskModelTestCase(TestCase):
     """Unit tests for the Task model."""
 
+    """ Pre-populates the table with user"""
     fixtures = [
         'tasks/tests/fixtures/default_user.json',
-        'tasks/tests/fixtures/default_task.json'
+        'tasks/tests/fixtures/default_team.json',
+        'tasks/tests/fixtures/default_task.json',
     ]
     
     def setUp(self):

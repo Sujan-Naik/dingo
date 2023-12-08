@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -41,25 +44,6 @@ class User(AbstractUser):
         
         return self.gravatar(size=60)
 
-class Task(models.Model):
-    """Model used for tasks."""
-
-    class Priority(models.IntegerChoices):
-        """Priority level for the task"""
-        BACKLOG = 1
-        LOW = 2
-        MEDIUM = 3
-        HIGH = 4
-        URGENT = 5
-
-    name = models.CharField(max_length=50, blank=False)
-    description = models.CharField(max_length=5000, blank=False)
-    deadline = models.DateTimeField(blank=False)
-    priority = models.IntegerField(choices=Priority.choices, blank=False, default=Priority.MEDIUM)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
 
 class Team(models.Model):
     """Model used to represent a team, namely its name and members"""
@@ -75,3 +59,65 @@ class Team(models.Model):
     def remove_member(self, user):
         """method to remove user from team"""
         self.team_members.remove(user)
+
+    def __str__(self):
+        return self.team_name
+
+
+class Task(models.Model):
+    """Model used for tasks."""
+
+    class Priority(models.IntegerChoices):
+        """Priority level for the task"""
+        BACKLOG = 1
+        LOW = 2
+        MEDIUM = 3
+        HIGH = 4
+        URGENT = 5
+
+    name = models.CharField(max_length=50, blank=False)
+    description = models.CharField(max_length=5000, blank=False)
+    deadline = models.DateTimeField(blank=False)
+    priority = models.IntegerField(choices=Priority.choices, blank=False, default=Priority.MEDIUM)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=False)
+    members = models.ManyToManyField(User, related_name='assigned_members', blank=False)
+
+    def __str__(self):
+        return self.name
+
+    
+
+class Notifications(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_receieved')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', default=1)
+    message = models.TextField(max_length=100, blank=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=False)
+
+
+class TimeLogging(models.Model):
+    """record how many time a user spent on a task"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    duration = models.DurationField(default=timedelta())
+
+    def clean(self):
+        super().clean()
+
+        # Check if start_time is before end_time
+        if self.start_time and self.end_time and self.start_time >= self.end_time:
+            raise ValidationError({'start_time': 'Start time must be before end time.'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        # Calculate duration before saving
+        if self.start_time and self.end_time:
+            self.duration = self.end_time - self.start_time
+            self.duration_minutes = self.duration.total_seconds() // 60
+        super().save(*args, **kwargs)
+
+
+

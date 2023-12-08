@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from tasks import views
+from tasks.views import TaskDetailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,7 +31,14 @@ urlpatterns = [
     path('create_task/', views.CreateTaskView.as_view(), name='create_task'),
     path('team', views.TeamView.as_view(), name='team'),
     path('tasks/', views.TaskListView.as_view(), name='task_list'),
-    path('tasks/<str:name>', views.TaskDetailView.as_view(), name='task_detail'),
+    path('tasks/<int:pk>', views.TaskDetailView.as_view(), name='task_detail'),
+    path('tasks/<int:pk>/modify', views.ModifyTaskView.as_view(), name='modify_task'),
+    path('tasks/<int:pk>/delete', views.DeleteTaskView.as_view(), name='delete'),
     path('teams/', views.TeamListView.as_view(), name='team_list'),
+    path('timelogging/<int:pk>/', views.TaskDetailView.as_view(), name='time_logging'),
     path('teams/<str:team_name>', views.TeamDetailView.as_view(), name='team_detail'),
+    path('timeline/', views.TimelineView.as_view(), name='timeline'),
+    path('timeline/<int:year>/', views.TimelineYearView.as_view(), name='timeline_year'),
+    path('timeline/<int:year>/<int:month>/', views.TimelineMonthView.as_view(), name='timeline_month')
+
 ]
