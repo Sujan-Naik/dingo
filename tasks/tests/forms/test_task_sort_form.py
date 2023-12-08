@@ -9,7 +9,7 @@ class TaskSortFormTestCase(TestCase):
     def setUp(self):
         self.form_input = {
             'sort_by': 'deadline',
-            'asc_or_desc': '-',
+            'asc_or_desc': True,
             'filter_by': 'name',
             'filter_string': 'task'
         }
@@ -24,7 +24,7 @@ class TaskSortFormTestCase(TestCase):
         asc_or_desc_field = form.fields['asc_or_desc']
         filter_by_field = form.fields['filter_by']
         self.assertTrue(isinstance(sort_field, forms.ChoiceField))
-        self.assertTrue(isinstance(asc_or_desc_field, forms.ChoiceField))
+        self.assertTrue(isinstance(asc_or_desc_field, forms.BooleanField))
         self.assertTrue(isinstance(filter_by_field, forms.ChoiceField))
 
     def test_valid_user_form(self):
@@ -38,15 +38,10 @@ class TaskSortFormTestCase(TestCase):
 
     def test_sort_by_cannot_be_empty(self):
         self.form_input = {
-            'asc_or_desc': '-',
+            'asc_or_desc': True,
             'filter_by': 'name',
             'filter_string': 'task'
         }
-        form = TaskSortForm(data=self.form_input)
-        self.assertFalse(form.is_valid())
-
-    def test_asc_or_desc_validation(self):
-        self.form_input['asc_or_desc'] = 'bad'
         form = TaskSortForm(data=self.form_input)
         self.assertFalse(form.is_valid())
     
@@ -58,21 +53,21 @@ class TaskSortFormTestCase(TestCase):
     def test_filter_by_cannot_be_empty(self):
         self.form_input = {
             'sort_by': 'deadline',
-            'asc_or_desc': '-',
+            'asc_or_desc': True,
             'filter_string': 'task'
         }
         form = TaskSortForm(data=self.form_input)
         self.assertFalse(form.is_valid())
 
     def test_ascending_sort(self):
-        self.form_input['asc_or_desc'] = ''
+        self.form_input['asc_or_desc'] = False
         form = TaskSortForm(data=self.form_input)
         self.assertTrue(form.is_valid())
 
     def test_filter_string_can_be_empty(self):
         self.form_input = {
             'sort_by': 'deadline',
-            'asc_or_desc': '-',
+            'asc_or_desc': True,
             'filter_by': 'name'
         }
         form = TaskSortForm(data=self.form_input)

@@ -253,7 +253,7 @@ class TaskSortForm(forms.Form):
     ]
 
     sort_by = forms.ChoiceField(choices=sorting_choices)
-    asc_or_desc = forms.ChoiceField(choices=[("","^"),("-","V")], required=False)
+    asc_or_desc = forms.BooleanField(required=False)
     filter_by = forms.ChoiceField(choices=filter_choices)
     filter_string = forms.CharField(required=False)
 

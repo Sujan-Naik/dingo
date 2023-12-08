@@ -43,9 +43,19 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user + sort criteria"""
-        form = TaskSortForm(self.request.GET)
+        request = self.request.GET.copy()
+        if 'asc_or_desc' in request:
+            if request['asc_or_desc'] == "on":
+                request['asc_or_desc'] = True
+            else:
+                request['asc_or_desc'] = False
+
+        form = TaskSortForm(request)
         if form.is_valid():
-            sort_by = form.cleaned_data.get("asc_or_desc", "") + form.cleaned_data.get("sort_by")
+            if form.cleaned_data.get("asc_or_desc"):
+                sort_by = "-" + form.cleaned_data.get("sort_by")
+            else:
+                sort_by = form.cleaned_data.get("sort_by")
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
             return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
