@@ -14,8 +14,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, \
-    ModifyTaskForm, TimeEntryForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging
 from .html_util.timeline import Timeline
@@ -37,15 +36,35 @@ def home(request):
 
 
 class TaskListView(LoginRequiredMixin, ListView):
-    """view the task list"""
+    """View the task list"""
     model = Task
     template_name = 'task_list.html'
     context_object_name = 'task_list'
 
     def get_queryset(self):
-        """Filter tasks based on the logged-in user"""
-        return Task.objects.filter(members=self.request.user)
+        """Filter tasks based on the logged-in user + sort criteria"""
+        form = TaskSortForm(self.request.GET)
+        if form.is_valid():
+            sort_by = form.cleaned_data.get("asc_or_desc", "") + form.cleaned_data.get("sort_by")
+            filter_by = self.request.GET.get("filter_by") + "__icontains"
+            filter_string = self.request.GET.get("filter_string", "")
+            return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
+        else:
+            # If sort criteria is malformed use default sort
+            return Task.objects.filter(author=self.request.user).order_by("deadline")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = TaskSortForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Add sort criteria into url params"""
+        sort_by = request.POST.get('sort_by')
+        asc_or_desc = request.POST.get('asc_or_desc')
+        filter_by = request.POST.get('filter_by')
+        filter_string = request.POST.get('filter_string')
+        return HttpResponseRedirect(reverse('task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""

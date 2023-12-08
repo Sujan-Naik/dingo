@@ -238,6 +238,24 @@ class InviteMemberForm(forms.ModelForm):
         widgets = {
         }
 
+class TaskSortForm(forms.Form):
+    """Form to allow for sorting + filtering of the task list"""
+    sorting_choices = [
+        ("deadline", "Deadline"),
+        ("name", "Name"),
+        ("priority", "Priority"),
+        ("author__username", "Author Username")
+    ]
+    filter_choices = [
+        ("name", "Name"),
+        ("description", "Description"),
+        ("author__username", "Author Username")
+    ]
+
+    sort_by = forms.ChoiceField(choices=sorting_choices)
+    asc_or_desc = forms.ChoiceField(choices=[("","^"),("-","V")], required=False)
+    filter_by = forms.ChoiceField(choices=filter_choices)
+    filter_string = forms.CharField(required=False)
 
 class ModifyTaskForm(forms.ModelForm):
 
@@ -284,5 +302,3 @@ class TimeEntryForm(forms.ModelForm):
         input_formats=['%Y-%m-%dT%H:%M'],
         help_text='Format: YYYY-MM-DDTHH:MM'
     )
-
-

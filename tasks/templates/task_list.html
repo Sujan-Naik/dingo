@@ -1,13 +1,18 @@
 {% extends 'dashboard.html' %}
 {% block content %}
-<h2>My Tasks</h2>
-<ul>
-  {% for task in task_list %}
-  <span class="task-number">{{ forloop.counter }}.</span>
-  <!--    add task counter-->
-  <li><a href="{% url 'task_detail' task.id %}">{{ task.name }}</a></li>
-  {% empty %}
-  <li>No tasks found</li>
-  {% endfor %}
-</ul>
+  <h2>My Tasks</h2>
+  <form action="{% url 'task_list' %}" method="post">
+    {% csrf_token %}
+    {% include 'partials/bootstrap_form.html' with form=form %}
+    <input type="submit" value="Sort" class="btn btn-primary">
+  </form>
+  <ul>
+    {% for task in task_list %}
+    <span class="task-number">{{ forloop.counter }}.</span>
+<!--    add task counter-->
+      <li><a href="{% url 'task_detail' task.id %}">{{ task.name }}</a></li>
+    {% empty %}
+      <li>No tasks found</li>
+    {% endfor %}
+  </ul>
 {% endblock %}
