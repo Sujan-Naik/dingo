@@ -1,5 +1,25 @@
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-  <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+  <ul class="navbar-nav me-auto">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'task_list' %}">Tasks</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'team_list' %}">Teams</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'timeline' %}">Timeline</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav ms-auto">
+    <li class="nav-item dropdown pe-2">
+      <a class="nav-link" href="#" id="creation-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Create
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="creation-dropdown">
+        <li><a class="dropdown-item" href="{% url 'create_task' %}">Task</a></li>
+        <li><a class="dropdown-item" href="{% url 'team' %}">Team</a></li>
+      </ul>
+    </li>
     <li class="nav-item dropdown">
       <a class="nav-link" href="#" id="user-account-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="bi-person-circle"></span>

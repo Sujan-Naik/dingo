@@ -126,3 +126,18 @@ h3.profile-title {
   transition: background-color .3s;
   display: flex;
 }
+
+/*
+ * Navbar
+ */
+#creation-dropdown {
+  background-color: gray;
+  border-radius: 8px;
+  color: white;
+}
+#creation-dropdown:hover {
+  background-color: lightgray;
+}
+#creation-dropdown:focus {
+  background-color: lightgray;
+}
