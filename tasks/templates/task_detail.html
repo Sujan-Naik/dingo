@@ -1,9 +1,17 @@
 {% extends 'task_list.html' %}
 
 {% block content %}
+
+<style>
+  .blank-line {
+    margin-bottom: 20px; /* You can adjust the value to control the amount of space */
+  }
+</style>
 <h2>{{ task.name }}</h2>
-<p>Description: {{ task.description }}</p>
+<p><strong>Description: </strong>{{ task.description }}</p>
 <span><strong>Due Date: </strong>{{ task.deadline }}</span>
+<div class="blank-line"></div>
+<p><strong>Task belongs to: <a href="{% url 'team_detail' task.team.team_name %}"> {{ task.team.team_name }}</a></strong></p>
 
 <!--check if has time-->
 {% if time_left %}
@@ -18,10 +26,17 @@
 {% endif %}
 {% else %}
 <span><strong>Time Remaining:</strong> Expired</span>
+
 {% endif %}
+<div class="blank-line"></div>
+<span><strong>Members in this task:</strong></span>
 
-<p>Author: {{ task.author }}</p>
-
+{% for member in task.members.all %}
+<li> {{ member.username }}  </li>
+{% endfor %}
+<div class="blank-line"></div>
+<p><strong>Author: </strong>{{ task.author }}</p>
+<p><strong>Time spent on this task: </strong></p>
 <ul>
     {% for time in time_loggings %}
         <li>{{ time.user.username }} spent {{ time.spent_days}} days,
