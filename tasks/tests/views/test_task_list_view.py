@@ -64,6 +64,22 @@ class TaskListTestCase(TestCase):
         task = Task.objects.get(id=10)
         self.assertContains(response, task.name)
 
+    def test_task_list_show_task_assigned(self):
+        """Test if the list can show assigned tasks"""
+        self.client.login(username=self.user.username, password='Password123')
+        new_user = User.objects.create(username='test_user', password='Password123')
+        assigned_task = Task.objects.create(name='assigned task',
+                                       description='assigned task description',
+                                       deadline="2023-11-16T15:43:22.039Z",
+                                       priority=2,
+                                       author=new_user,
+                                       team=self.form_input['team'],
+                                       id=11)
+        assigned_task.members.set(self.form_input['members'])
+        response = self.client.get(reverse('task_list'))
+        self.assertContains(response, assigned_task.name)
+
+
     def test_valid_sort(self):
         """Test if the page is correctly returned with a valid sort condition"""
         self.client.login(username=self.user.username, password='Password123')
