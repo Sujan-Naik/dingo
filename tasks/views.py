@@ -319,10 +319,27 @@ class CreateTaskView(LoginRequiredMixin, FormView):
         kwargs.update({'user': self.request.user})
         return kwargs
 
+
     def form_valid(self, form):
-        # self.object = form.save()
-        form.save()
+        # Save the form and get the created task
+        task = form.save()
+
+        # Send notifications to team members assigned to the task
+        team_members = task.members.all()
+        for member in team_members:
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'You have been assigned to a new task: {task.name}.',
+                task=task,
+            )
+
         return super().form_valid(form)
+    
+    # def form_valid(self, form):
+    #     # self.object = form.save()
+    #     form.save()
+    #     return super().form_valid(form)
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
@@ -416,35 +433,6 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
-
-# class DeleteTaskView(LoginRequiredMixin, DeleteView):
-
-#     model = Task
-#     template_name = "tasks/delete.html"
-#     context_object_name = 'task'
-
-    # def delete(self, request, *args, **kwargs):
-    #     # Notify assigned members before deleting the task
-        
-    #     for member in self.object.members.all():
-    #         print(f"Creating notification for member: {member.username}")
-    #         Notifications.objects.create(
-    #             recipient=member,
-    #             sender=self.request.user,
-    #             message=f'Task "{self.object.name}" has been deleted.',
-    #         )
-
-    #     # Perform the deletion
-    #     response = super().delete(request, *args, **kwargs)
-
-    #     # Redirect to the success URL
-    #     messages.success(self.request, "Task Deleted Successfully")
-    #     return response
-
-    # def get_success_url(self):
-    #     messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
-    #     return reverse_lazy('task_list')
-    
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
     template_name = "tasks/delete.html"
@@ -467,5 +455,30 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
         messages.success(self.request, "Task Deleted Successfully")
         return response
     
+
+class InboxPageView(ListView):
+    model = Notifications
+    template_name = 'inbox_page.html'
+    context_object_name = 'notifications'
+    ordering = ['-timestamp']
+
+    def get_queryset(self):
+        return self.model.objects.filter(recipient=self.request.user)
+    
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+
+        if action == 'read_all':
+            # Delete all notifications for the current user
+            Notifications.objects.filter(recipient=request.user).delete()
+            messages.success(request, 'All notifications have been marked as read.')
+
+        return HttpResponseRedirect(reverse_lazy('inbox'))
+
+    
+    
+
+    
+
 
 

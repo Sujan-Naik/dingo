@@ -285,4 +285,6 @@ class TimeEntryForm(forms.ModelForm):
         help_text='Format: YYYY-MM-DDTHH:MM'
     )
 
-
+class ReadAllNotificationsForm(forms.Form):
+    # This form can be empty since we just need it to trigger the form submission
+    pass

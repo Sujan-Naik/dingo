@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block body %}
+{% include 'partials/navbar.html' %}
+{% include 'partials/messages.html' %}
+
+<div class="container mt-5">
+  <h2>Your Notifications</h2>
+  <div class="list-group">
+    <form method="post" action="{% url 'inbox' %}">
+      {% csrf_token %}
+      <button type="submit" name="action" value="read_all">Read All</button>
+    </form>
+    {% for notification in notifications %}
+    <a href="#" class="list-group-item list-group-item-action">
+      <strong>{{ notification.sender }}</strong>: {{ notification.message }}
+      <span class="badge bg-secondary">{{ notification.timestamp|timesince }} ago</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
