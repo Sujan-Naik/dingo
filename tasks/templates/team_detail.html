@@ -12,10 +12,15 @@
       <li>No members found</li>
   {% endfor %}
   </ul>
+
 <p><strong>Tasks belong to this team: </strong></p>
+{% if no_task %}
+    <p>No tasks in this team.</p>
+{% else %}
 {% for task in team_task %}
 <p><strong><a href="{% url 'task_detail' task.id %}"> {{ task.name}}</a></strong></p>
 {% endfor %}
+{% endif %}
 
       {% if user == team.team_admin %}
       <h3>Manage Team Members:</h3>

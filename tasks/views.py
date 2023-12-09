@@ -152,7 +152,10 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['team_task'] =Task.objects.filter(team=self.get_object())
+        tasks = Task.objects.filter(team=self.get_object())
+        context['team_task'] = tasks
+        if not tasks.exists():
+            context['no_task'] = True
         context['all_users'] = User.objects.all()
         context['invite_form'] = InviteMemberForm()
         return context

@@ -85,6 +85,11 @@ class TaskDetailViewTest(TestCase):
 
         self.assertContains(response,self.user.username)
         self.assertContains(response, task.name)
-        print(response.content.decode())
         self.assertContains(response, expected_output)
+
+    def test_team_task_view(self):
+        self.client.login(username=self.user.username, password='Password123')
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail', args=[task.id]))
+        self.assertContains(response, task.team.team_name)
 
