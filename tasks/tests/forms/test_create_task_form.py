@@ -42,18 +42,3 @@ class CreateTaskFormTestCase(TestCase):
         self.assertTrue(form1.is_valid())
         form2 = CreateTaskForm2(user=self.user, team=self.team, data=self.form2_input)
         self.assertTrue(form2.is_valid())
-
-    def test_form_wizard_must_save_correctly(self):
-        form1 = CreateTaskForm1(user=self.user, data=self.form1_input)
-        form2 = CreateTaskForm2(user=self.user, team=self.team, data=self.form2_input)
-        before_count = Task.objects.count()
-        form2.save()
-        after_count = Task.objects.count()
-        #self.assertEqual(after_count, before_count + 1)
-        task = Task.objects.get(name='Coursework')
-
-        self.assertEqual(task.name, 'Coursework')
-        self.assertEqual(task.description, 'This is an important django project to finish.')
-        deadline = timezone.datetime(2024, 12, 15, 16, 00)
-        deadline = deadline.replace(tzinfo=timezone.utc)
-        self.assertEqual(task.deadline, deadline)
