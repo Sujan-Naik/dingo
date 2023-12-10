@@ -261,13 +261,14 @@ class ModifyTaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['name', 'description', 'deadline', 'priority']
+        fields = ['name', 'description', 'deadline', 'priority', 'dependencies']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'})
         }
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
 
     def clean_deadline(self):
         deadline_datetime = self.cleaned_data.get('deadline')
@@ -276,12 +277,11 @@ class ModifyTaskForm(forms.ModelForm):
             raise forms.ValidationError("Deadline is Invalid")
         
         return deadline_datetime
+
+
     
     def save(self, commit=True):
-        task = super().save(commit=False)
-        if commit:
-            task.save()
-
+        task = super().save(commit=True)
         return task
 
 
