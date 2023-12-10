@@ -276,7 +276,7 @@ class ModifyTaskForm(forms.ModelForm):
         filter_tasks = (Task.objects.all().exclude(pk=self.instance.pk)
                         .filter(team=self.instance.team)
                         .exclude(dependencies__in=[self.instance]))
-        self.fields['dependencies'] = forms.ModelMultipleChoiceField(queryset=filter_tasks)
+        self.fields['dependencies'] = forms.ModelMultipleChoiceField(queryset=filter_tasks, required=False)
 
     def clean_deadline(self):
         deadline_datetime = self.cleaned_data.get('deadline')
