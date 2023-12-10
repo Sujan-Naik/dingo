@@ -141,3 +141,24 @@ h3.profile-title {
 #creation-dropdown:focus {
   background-color: lightgray;
 }
+
+/*
+ * Task sort arrow
+ */
+#id_asc_or_desc + #sort_arrow {
+  transition: all ease-in-out .3s;
+}
+
+#id_asc_or_desc:checked + #sort_arrow {
+  transform: rotate(180deg);
+}
+
+#id_asc_or_desc {
+  display: none;
+}
+
+#id_sort_by {
+  appearance: none;
+  padding-left: 4px;
+  padding-right: 4px;
+}
