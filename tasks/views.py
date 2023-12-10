@@ -8,13 +8,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
+from formtools.wizard.views import SessionWizardView
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, \
+    TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging
 from .html_util.timeline import Timeline
@@ -317,29 +319,38 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
 
-class CreateTaskView(LoginRequiredMixin, FormView):
-    """Display the create task screen and handle creating tasks."""
+class CreateTaskWizard(SessionWizardView):
+    """Display a 2 page form for creating a task"""
 
-    model = CreateTaskForm
-    form_class = CreateTaskForm
-    template_name = "create_task.html"
-    redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
+    form_list = [CreateTaskForm1, CreateTaskForm2]
+    template_name = "create_task_wizard.html"
 
-    def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the create task form."""
-
-        kwargs = super().get_form_kwargs(**kwargs)
+    def get_form_kwargs(self, step):
+        """Pass the current user to both form pages."""
+        kwargs = super(CreateTaskWizard, self).get_form_kwargs(step)
         kwargs.update({'user': self.request.user})
+
+        """Saves the team selected from the first page, so the second page can use it"""
+        if step == '1':
+            team = self.get_cleaned_data_for_step('0')['team']
+            kwargs.update({'team': team, })
+
         return kwargs
 
-    def form_valid(self, form):
-        # self.object = form.save()
-        form.save()
-        return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    def done(self, form_list, form_dict, **kwargs):
+        """Saves the task using verified form information from both pages"""
 
+        task_name = form_list[0].cleaned_data.get("name")
+        task_description = form_list[0].cleaned_data.get("description")
+        task_deadline = form_list[0].cleaned_data.get("deadline")
+        task_team = form_list[0].cleaned_data.get("team")
+        task_priority = form_list[0].cleaned_data.get("priority")
+        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
+                    author=self.request.user, team=task_team)
+        task.save()
+        task.members.set(form_list[1].cleaned_data.get('members'))
+        return HttpResponseRedirect(reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN))
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""

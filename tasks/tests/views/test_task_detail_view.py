@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.test import TestCase
 from django.urls import reverse
 
-from tasks.forms import CreateTaskForm
 from tasks.models import Task, User, Team, TimeLogging
 
 
