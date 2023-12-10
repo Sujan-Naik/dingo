@@ -147,9 +147,14 @@ class CreateTaskForm1(forms.ModelForm):
 
         super().clean()
         deadline_datetime = self.cleaned_data.get('deadline')
-        """Sends an error if deadline time has already passed"""
-        if deadline_datetime <= timezone.now():
+
+        """Checks if the deadline date is invalid"""
+        if deadline_datetime is None:
             self.add_error('deadline', "Deadline is invalid")
+        elif deadline_datetime <= timezone.now():
+            """Sends an error if deadline time has already passed"""
+            self.add_error('deadline', "Deadline is invalid")
+
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
 
