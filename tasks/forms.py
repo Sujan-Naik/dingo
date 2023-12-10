@@ -116,6 +116,7 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
 
 class CreateTaskForm(forms.ModelForm):
     """Form enabling registered users to create tasks."""
+
     class Meta:
         """Form options."""
         model = Task
@@ -129,7 +130,8 @@ class CreateTaskForm(forms.ModelForm):
 
     name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
-    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
+    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices,
+                                 initial=Task.Priority.MEDIUM)
 
     members = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
@@ -142,10 +144,11 @@ class CreateTaskForm(forms.ModelForm):
         super().__init__(**kwargs)
         self.user = user
         self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
-                                      queryset=Team.objects.filter(team_members__in=[self.user]))
+                                                     queryset=Team.objects.filter(team_members__in=[self.user]))
         '''self.fields['members'] = forms.ModelMultipleChoiceField(
             queryset=Team.objects.filter(team_members__in=[self.user]).values('team_name'),
             widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))'''
+
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
@@ -231,12 +234,14 @@ class TeamCreateForm(forms.ModelForm):
 
         return team
 
+
 class InviteMemberForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ['team_name']
         widgets = {
         }
+
 
 class TaskSortForm(forms.Form):
     """Form to allow for sorting + filtering of the task list"""
@@ -253,37 +258,37 @@ class TaskSortForm(forms.Form):
     ]
 
     sort_by = forms.ChoiceField(choices=sorting_choices)
-    asc_or_desc = forms.ChoiceField(choices=[("","^"),("-","V")], required=False)
+    asc_or_desc = forms.ChoiceField(choices=[("", "^"), ("-", "V")], required=False)
     filter_by = forms.ChoiceField(choices=filter_choices)
     filter_string = forms.CharField(required=False)
 
-class ModifyTaskForm(forms.ModelForm):
 
+class ModifyTaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = ['name', 'description', 'deadline', 'priority', 'dependencies']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'})
+            'deadline': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'})
         }
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        filter_tasks = (Task.objects.all().exclude(pk=self.instance.pk)
+                        .filter(team=self.instance.team)
+                        .exclude(dependencies__in=[self.instance]))
+        self.fields['dependencies'] = forms.ModelMultipleChoiceField(queryset=filter_tasks)
 
     def clean_deadline(self):
         deadline_datetime = self.cleaned_data.get('deadline')
 
         if deadline_datetime < timezone.now():
             raise forms.ValidationError("Deadline is Invalid")
-        
+
         return deadline_datetime
 
-
-    
     def save(self, commit=True):
         task = super().save(commit=True)
         return task
-
 
 
 class TimeEntryForm(forms.ModelForm):
