@@ -288,17 +288,13 @@ class TaskSortForm(forms.Form):
 class ModifyTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['name', 'description', 'deadline', 'priority', 'dependencies']
+        fields = ['name', 'description', 'deadline', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'})
         }
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        filter_tasks = (Task.objects.all().exclude(pk=self.instance.pk)
-                        .filter(team=self.instance.team)
-                        .exclude(dependencies__in=[self.instance]))
-        self.fields['dependencies'] = forms.ModelMultipleChoiceField(queryset=filter_tasks, required=False)
 
     def clean_deadline(self):
         deadline_datetime = self.cleaned_data.get('deadline')

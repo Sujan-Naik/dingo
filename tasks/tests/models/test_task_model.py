@@ -99,7 +99,6 @@ class TaskModelTestCase(TestCase):
     def test_author_cannot_be_none(self):
         self.task.author = None
         self._assert_task_is_invalid()
-        
 
     def _assert_task_is_valid(self):
         try:
@@ -110,3 +109,5 @@ class TaskModelTestCase(TestCase):
     def _assert_task_is_invalid(self):
         with self.assertRaises(ValidationError):
             self.task.full_clean()
+
+
