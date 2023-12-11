@@ -82,7 +82,6 @@ class Task(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, blank=False)
     members = models.ManyToManyField(User, related_name='assigned_members', blank=False)
-    dependencies = models.ManyToManyField('Task', blank=True, symmetrical=False)
 
     def __str__(self):
         return self.name
