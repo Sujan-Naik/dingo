@@ -14,6 +14,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
+from django.db.models import Q
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging
@@ -62,10 +63,10 @@ class TaskListView(LoginRequiredMixin, ListView):
                 sort_by = form.cleaned_data.get("sort_by")
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
-            return Task.objects.filter(**{"members":self.request.user, filter_by:filter_string}).order_by(sort_by)
+            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user),**{filter_by:filter_string}).order_by(sort_by)
         else:
             # If sort criteria is malformed use default sort
-            return Task.objects.filter(members=self.request.user).order_by("deadline")
+            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
