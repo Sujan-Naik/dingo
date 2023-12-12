@@ -28,35 +28,41 @@
     {% endif %}
   </div>
   <div class="row pb-2">
-    <div class="col-3">
+    <div class="col">
       <b>Name</b>
     </div>
-    <div class="col-3">
+    <div class="col">
       <b>Deadline</b>
     </div>
-    <div class="col-3">
+    <div class="col">
       <b>Priority</b>
     </div>
-    <div class="col-3">
+    <div class="col">
+      <b>Team</b>
+    </div>
+    <div class="col">
       <b>Author</b>
     </div>
   </div>
   {% for task in task_list %}
     <div class="row">
-      <div class="col-3">
+      <div class="col">
         <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
       </div>
-      <div class="col-3">
+      <div class="col">
         {% if task.deadline < today %}
           <p class="red-text">{{ task.deadline }} - <b>OVERDUE</b></p>
         {% else %}
           <p>{{ task.deadline }}</p>
         {% endif %}
       </div>
-      <div class="col-3">
+      <div class="col">
         <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
       </div>
-      <div class="col-3">
+      <div class="col">
+        <a href="{% url 'team_detail' task.team.team_name %}">{{ task.team.team_name }}</a>
+      </div>
+      <div class="col">
         {% if task.author == user %}
           <p>{{ task.author.username }} <span class="blue-text">(you)</span></p>
         {% else %}
