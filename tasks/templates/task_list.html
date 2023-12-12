@@ -1,4 +1,8 @@
 {% extends 'base_content.html' %}
+{% load static %}
+{% block css %}
+<link href="{% static 'task_list.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
 {% block content %}
 <div class="container">
   <h2>My Tasks</h2>
@@ -16,14 +20,40 @@
       </div>
     </div>
   </form>
-  <ul>
-    {% for task in task_list %}
-    <span class="task-number">{{ forloop.counter }}.</span>
-<!--    add task counter-->
-      <li><a href="{% url 'task_detail' task.id %}">{{ task.name }}</a></li>
-    {% empty %}
-      <li>No tasks found</li>
-    {% endfor %}
-  </ul>
+  <div class="row pb-2">
+    <b>{{ task_list|length }} Tasks Total</b>
+  </div>
+  <div class="row pb-2">
+    <div class="col-3">
+      <b>Name</b>
+    </div>
+    <div class="col-3">
+      <b>Deadline</b>
+    </div>
+    <div class="col-3">
+      <b>Priority</b>
+    </div>
+    <div class="col-3">
+      <b>Author</b>
+    </div>
+  </div>
+  {% for task in task_list %}
+    <div class="row">
+      <div class="col-3">
+        <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
+      </div>
+      <div class="col-3">
+        <p>{{ task.deadline }}</p>
+      </div>
+      <div class="col-3">
+        <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+      </div>
+      <div class="col-3">
+        <p>{{ task.author.username }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <b>No tasks found</b>
+  {% endfor %}
 </div>
 {% endblock %}
