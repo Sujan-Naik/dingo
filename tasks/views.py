@@ -40,6 +40,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'task_list.html'
     context_object_name = 'task_list'
+    user_request = None
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user + sort criteria"""
@@ -52,6 +53,8 @@ class TaskListView(LoginRequiredMixin, ListView):
 
         form = TaskSortForm(request)
         if form.is_valid():
+            self.user_request = request
+
             if form.cleaned_data.get("asc_or_desc"):
                 sort_by = "-" + form.cleaned_data.get("sort_by")
             else:
@@ -65,7 +68,10 @@ class TaskListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = TaskSortForm()
+        if self.user_request is not None:
+            context['form'] = TaskSortForm(self.user_request)
+        else:
+            context['form'] = TaskSortForm()
         return context
 
     def post(self, request, *args, **kwargs):
