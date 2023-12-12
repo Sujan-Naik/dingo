@@ -26,7 +26,11 @@
       <a href="{% url 'team_detail' team.team_name %}">{{ team.team_name }}</a>
     </div>
     <div class="col-4">
-      <p>{{ team.team_admin.username }}</p>
+      {% if team.team_admin == user %}
+        <p>{{ team.team_admin.username }} <span class="blue-text">(you)</span></p>
+      {% else %}
+        <p>{{ team.team_admin.username }}</p>
+      {% endif %}
     </div>
     <div class="col-4">
       <p>{{ team.team_members.all|length }}</p>

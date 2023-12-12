@@ -141,3 +141,7 @@ h3.profile-title {
 #creation-dropdown:focus {
   background-color: lightgray;
 }
+
+.blue-text {
+  color: #0d6efd;
+}

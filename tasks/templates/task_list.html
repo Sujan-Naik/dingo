@@ -53,7 +53,11 @@
         <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
       </div>
       <div class="col-3">
-        <p>{{ task.author.username }}</p>
+        {% if task.author == user %}
+          <p>{{ task.author.username }} <span class="blue-text">(you)</span></p>
+        {% else %}
+          <p>{{ task.author.username }}</p>
+        {% endif %}
       </div>
     </div>
   {% empty %}
