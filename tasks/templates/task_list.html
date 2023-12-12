@@ -21,7 +21,11 @@
     </div>
   </form>
   <div class="row pb-2">
-    <b>{{ task_list|length }} Tasks Total</b>
+    {% if task_list|length == 1%}
+      <b>1 Task Total</b>
+    {% else %}
+      <b>{{ task_list|length }} Tasks Total</b>
+    {% endif %}
   </div>
   <div class="row pb-2">
     <div class="col-3">
@@ -53,7 +57,7 @@
       </div>
     </div>
   {% empty %}
-    <b>No tasks found</b>
+    <p>No tasks found</p>
   {% endfor %}
 </div>
 {% endblock %}
