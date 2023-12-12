@@ -47,7 +47,11 @@
         <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
       </div>
       <div class="col-3">
-        <p>{{ task.deadline }}</p>
+        {% if task.deadline < today %}
+          <p class="red-text">{{ task.deadline }} - <b>OVERDUE</b></p>
+        {% else %}
+          <p>{{ task.deadline }}</p>
+        {% endif %}
       </div>
       <div class="col-3">
         <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>

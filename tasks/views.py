@@ -74,6 +74,8 @@ class TaskListView(LoginRequiredMixin, ListView):
             context['form'] = TaskSortForm(self.user_request)
         else:
             context['form'] = TaskSortForm()
+        # Need current date to show which tasks are overdue
+        context['today'] = timezone.now()
         return context
 
     def post(self, request, *args, **kwargs):
