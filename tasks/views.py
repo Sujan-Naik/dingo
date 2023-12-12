@@ -40,6 +40,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'task_list.html'
     context_object_name = 'task_list'
+    # Used to fill the sorting form with the user's previous input
     user_request = None
 
     def get_queryset(self):
