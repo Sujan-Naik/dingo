@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
+from formtools.wizard.views import SessionWizardView
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -15,7 +16,8 @@ from django.views.generic import ListView, DetailView, TemplateView, RedirectVie
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, \
+    TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging
 from .html_util.timeline import Timeline
@@ -177,12 +179,18 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
         return get_object_or_404(Team, team_name=self.kwargs['team_name'])
 
     def get_context_data(self, **kwargs):
+        """set the context data"""
         context = super().get_context_data(**kwargs)
+        tasks = Task.objects.filter(team=self.get_object())
+        context['team_task'] = tasks
+        if not tasks.exists():
+            context['no_task'] = True
         context['all_users'] = User.objects.all()
         context['invite_form'] = InviteMemberForm()
         return context
 
     def post(self, request, *args, **kwargs):
+        """post function prepares for deleting and inviting people from team"""
         team = self.get_object()
         action = request.POST.get('action')
 
@@ -190,10 +198,11 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
             form = InviteMemberForm(request.POST, instance=team)
             users_to_invite = request.POST.getlist('username')
             if form.is_valid():
-                # users_to_invite = form.cleaned_data.get('team_members')
                 for username in users_to_invite:
                     user = User.objects.get(username=username)
-                    # check if the user is already in the team
+
+                    """ check if the user is already in the team"""
+
                     if user in team.team_members.all():
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
@@ -339,29 +348,38 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
 
 
-class CreateTaskView(LoginRequiredMixin, FormView):
-    """Display the create task screen and handle creating tasks."""
+class CreateTaskWizard(SessionWizardView):
+    """Display a 2 page form for creating a task"""
 
-    model = CreateTaskForm
-    form_class = CreateTaskForm
-    template_name = "create_task.html"
-    redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
+    form_list = [CreateTaskForm1, CreateTaskForm2]
+    template_name = "create_task_wizard.html"
 
-    def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the create task form."""
-
-        kwargs = super().get_form_kwargs(**kwargs)
+    def get_form_kwargs(self, step):
+        """Pass the current user to both form pages."""
+        kwargs = super(CreateTaskWizard, self).get_form_kwargs(step)
         kwargs.update({'user': self.request.user})
+
+        """Saves the team selected from the first page, so the second page can use it"""
+        if step == '1':
+            team = self.get_cleaned_data_for_step('0')['team']
+            kwargs.update({'team': team, })
+
         return kwargs
 
-    def form_valid(self, form):
-        # self.object = form.save()
-        form.save()
-        return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+    def done(self, form_list, form_dict, **kwargs):
+        """Saves the task using verified form information from both pages"""
 
+        task_name = form_list[0].cleaned_data.get("name")
+        task_description = form_list[0].cleaned_data.get("description")
+        task_deadline = form_list[0].cleaned_data.get("deadline")
+        task_team = form_list[0].cleaned_data.get("team")
+        task_priority = form_list[0].cleaned_data.get("priority")
+        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
+                    author=self.request.user, team=task_team)
+        task.save()
+        task.members.set(form_list[1].cleaned_data.get('members'))
+        return HttpResponseRedirect(reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN))
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""
@@ -388,9 +406,11 @@ class TeamView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
 
 class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style from 2023 to the current year + 5"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.returnHTMLPages()
@@ -398,9 +418,11 @@ class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
         return context
 
 class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style for a given year"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar for that year to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.formatyear(self.kwargs['year'])
@@ -408,9 +430,11 @@ class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
         return context
 
 class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style for a given month within a year"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar for that month to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.formatmonth(self.kwargs['year'], self.kwargs['month'])
@@ -437,7 +461,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
-
+    """Allow users to delete tasks in task detail"""
     model = Task
     template_name = "tasks/delete.html"
     context_object_name = 'task'
@@ -445,5 +469,20 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
         return reverse_lazy('task_list')
+
+class DeleteTeamView(LoginRequiredMixin, DeleteView):
+    """Allow users to delete teams in team detail"""
+    model = Team
+    template_name = "tasks/delete.html"
+    context_object_name = 'team'
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Team Deleted Successfully")
+        return reverse_lazy('team_list')
+
+
+    def get_object(self, queryset=None):
+        team_name = self.kwargs['team_name']
+        return get_object_or_404(Team, team_name=team_name)
 
 

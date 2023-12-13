@@ -2,7 +2,7 @@
 
 {% block content %}
   <h2>{{ team.team_name }}</h2>
-  <p>Team Members:</p>
+<p><strong>Team Members:</strong></p>
 <ul>
 {% for member in team.team_members.all %}
     <span class="member-number">{{ forloop.counter }}.</span>
@@ -12,6 +12,16 @@
       <li>No members found</li>
   {% endfor %}
   </ul>
+
+<p><strong>Tasks belong to this team: </strong></p>
+{% if no_task %}
+    <p>No tasks in this team.</p>
+{% else %}
+{% for task in team_task %}
+<p><strong><a href="{% url 'task_detail' task.id %}"> {{ task.name}}</a></strong></p>
+{% endfor %}
+{% endif %}
+
       {% if user == team.team_admin %}
       <h3>Manage Team Members:</h3>
 
@@ -41,5 +51,10 @@
   </form>
 
 {% endif %}
-
+<h3>Manage Team:</h3>
+<div>
+  <a href="{% url 'delete_team' team.team_name %}">
+    <button>Delete Team</button>
+  </a>
+</div>
 {% endblock %}

@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.test import TestCase
 from django.urls import reverse
 
-from tasks.forms import CreateTaskForm
 from tasks.models import Task, User, Team, TimeLogging
 
 
@@ -16,7 +15,7 @@ class TaskDetailViewTest(TestCase):
     ]
 
     def setUp(self):
-        # set the date for test
+        """set up the date for test"""
         self.user = User.objects.get(username='@johndoe')
         self.team = Team.objects.get(team_name='Default Team')
         self.form_input = {
@@ -41,18 +40,21 @@ class TaskDetailViewTest(TestCase):
         new_task.members.set(self.form_input['members'])
 
     def test_task_details_view(self):
+        """test if task detail shows correctly"""
         self.client.login(username=self.user.username, password='Password123')
         task = Task.objects.get(name='Test')
         response = self.client.get(reverse('task_detail',args=[task.id]))
         self.assertEqual(response.status_code, 200)
 
     def test_task_details_template(self):
+        """test if it uses the correct template"""
         self.client.login(username=self.user.username, password='Password123')
         task = Task.objects.get(name='Test')
         response = self.client.get(reverse('task_detail',args=[task.id]))
         self.assertTemplateUsed(response, 'task_detail.html')
 
     def test_task_details_view_task(self):
+        """test if task details view correctly"""
         self.client.login(username=self.user.username, password='Password123')
         task = Task.objects.get(name='Test')
         response = self.client.get(reverse('task_detail',args=[task.id]))
@@ -63,12 +65,13 @@ class TaskDetailViewTest(TestCase):
         self.assertContains(response, task.priority)
 
     def test_task_details_view_timeLogging(self):
+        """test if timeLogging shows correctly in task details"""
         self.client.login(username=self.user.username, password='Password123')
         task = Task.objects.get(name='Test')
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=2)
 
-        # Create a valid TimeLogging entry
+        """ Create a valid TimeLogging entry"""
         time_logging = TimeLogging.objects.create(
             user=self.user,
             task=task,
@@ -85,6 +88,12 @@ class TaskDetailViewTest(TestCase):
 
         self.assertContains(response,self.user.username)
         self.assertContains(response, task.name)
-        print(response.content.decode())
         self.assertContains(response, expected_output)
+
+    def test_team_task_view(self):
+        """test if tasks exist in team"""
+        self.client.login(username=self.user.username, password='Password123')
+        task = Task.objects.get(name='Test')
+        response = self.client.get(reverse('task_detail', args=[task.id]))
+        self.assertContains(response, task.team.team_name)
 

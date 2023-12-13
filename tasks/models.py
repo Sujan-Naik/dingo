@@ -107,13 +107,13 @@ class TimeLogging(models.Model):
     def clean(self):
         super().clean()
 
-        # Check if start_time is before end_time
+        """ Check if start_time is before end_time"""
         if self.start_time and self.end_time and self.start_time >= self.end_time:
             raise ValidationError({'start_time': 'Start time must be before end time.'})
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        # Calculate duration before saving
+        """ Calculate duration before saving"""
         if self.start_time and self.end_time:
             self.duration = self.end_time - self.start_time
             self.duration_minutes = self.duration.total_seconds() // 60

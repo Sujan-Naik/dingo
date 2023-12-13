@@ -115,12 +115,13 @@ class SignUpForm(NewPasswordMixin, forms.ModelForm):
         return user
 
 
-class CreateTaskForm(forms.ModelForm):
-    """Form enabling registered users to create tasks."""
+class CreateTaskForm1(forms.ModelForm):
+    """First page of a form that creates a task"""
+
     class Meta:
         """Form options."""
         model = Task
-        fields = ['name', 'description', 'deadline', 'team', 'members', 'priority']
+        fields = ['name', 'description', 'deadline', 'team', 'priority']
         widgets = {
             'deadline': forms.DateTimeInput(attrs={
                 'class': 'form-control',
@@ -130,60 +131,85 @@ class CreateTaskForm(forms.ModelForm):
 
     name = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     description = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
-    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices, initial=Task.Priority.MEDIUM)
-
-    members = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(),
-        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"})
-    )
+    priority = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=Task.Priority.choices,
+                                 initial=Task.Priority.MEDIUM)
 
     def __init__(self, user=None, **kwargs):
-        """Construct new form instance with a user instance."""
+        """Construct a new form instance with a user instance."""
 
         super().__init__(**kwargs)
         self.user = user
+        """Makes the team field only show the user's teams as options"""
         self.fields['team'] = forms.ModelChoiceField(widget=forms.Select(attrs={"class": "form-control"}),
-                                      queryset=Team.objects.filter(team_members__in=[self.user]))
-        '''self.fields['members'] = forms.ModelMultipleChoiceField(
-            queryset=Team.objects.filter(team_members__in=[self.user]).values('team_name'),
-            widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))'''
+                                                     queryset=Team.objects.filter(team_members__in=[self.user]))
+
     def clean(self):
         """Clean the deadline datatime data and generate messages for any errors."""
 
         super().clean()
         deadline_datetime = self.cleaned_data.get('deadline')
-        """Sends error if deadline time has already passed"""
-        if deadline_datetime <= timezone.now():
+
+        """Checks if the deadline date is invalid"""
+        if deadline_datetime is None:
             self.add_error('deadline', "Deadline is invalid")
+        elif deadline_datetime <= timezone.now():
+            """Sends an error if deadline time has already passed"""
+            self.add_error('deadline', "Deadline is invalid")
+
         if self.user is None:
             self.add_error(None, "You must be logged in first!")
 
-        team = self.cleaned_data.get('team')
+
+class CreateTaskForm2(forms.ModelForm):
+    """Second page of a form that creates a task"""
+
+    class Meta:
+        """Form options."""
+        model = Task
+        fields = ['members']
+
+    def __init__(self, user=None, team=None, **kwargs):
+        """Construct new form instance with a user instance."""
+
+        super().__init__(**kwargs)
+        self.user = user
+        self.team = team
+
+        if self.team is not None:
+            self.fields['members'] = forms.ModelMultipleChoiceField(
+                queryset=team.team_members.all(),
+                widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+        else:
+            self.fields['members'] = forms.ModelMultipleChoiceField(
+                queryset=User.objects.none(),
+                widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check form-check-inline"}))
+
+        self.fields['members'].label = "Assign Members"
+
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+
+        super().clean()
+        if self.user is None:
+            self.add_error(None, "You must be logged in first!")
+
+        if self.team is None:
+            self.add_error(None, "You must be select a team in the previous page first!")
+
+        """Ensures at least one team member is selected"""
         members = self.cleaned_data.get('members')
         if members is None:
             self.add_error('members', "Select at least one team member!")
         else:
+            """Checks if all members chosen are in the selected team"""
             for member in members:
-                if not team in member.teams.all():
+                if not self.team in member.teams.all():
                     self.add_error('members', "Members must be in the specified team!")
                     break
 
-    def save(self):
-        """Create a new task."""
-        super().save(commit=False)
-        task_name = self.cleaned_data.get("name")
-        task_description = self.cleaned_data.get("description")
-        task_deadline = self.cleaned_data.get("deadline")
-        task_team = self.cleaned_data.get("team")
-        task_priority = self.cleaned_data.get("priority")
-        task = Task(name=task_name, description=task_description, deadline=task_deadline, priority=task_priority,
-                    author=self.user, team=task_team)
-        task.save()
-        task.members.set(self.cleaned_data.get('members'))
-        return task
-
 
 class TeamCreateForm(forms.ModelForm):
+    """Creates teams and initialises members"""
     class Meta:
         model = Team
         fields = ['team_name', 'team_members']
@@ -204,6 +230,7 @@ class TeamCreateForm(forms.ModelForm):
         self.user = user
 
     def clean(self):
+        """Ensures teams have at least one member, a unique non-null name and the user is logged in"""
         cleaned_data = super().clean()
 
         team_members = cleaned_data.get('team_members')
@@ -224,6 +251,7 @@ class TeamCreateForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        """Saves team name and members to database"""
         team = super().save(commit=False)
         team.team_admin = self.user
         team.team_name = self.cleaned_data.get('team_name')
@@ -232,12 +260,14 @@ class TeamCreateForm(forms.ModelForm):
 
         return team
 
+
 class InviteMemberForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ['team_name']
         widgets = {
         }
+
 
 class TaskSortForm(forms.Form):
     """Form to allow for sorting + filtering of the task list"""
@@ -258,13 +288,13 @@ class TaskSortForm(forms.Form):
     filter_by = forms.ChoiceField(choices=filter_choices)
     filter_string = forms.CharField(required=False)
 
-class ModifyTaskForm(forms.ModelForm):
 
+class ModifyTaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = ['name', 'description', 'deadline', 'priority']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'})
+            'deadline': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'})
         }
 
     def __init__(self, user=None, *args, **kwargs):
@@ -275,23 +305,21 @@ class ModifyTaskForm(forms.ModelForm):
 
         if deadline_datetime < timezone.now():
             raise forms.ValidationError("Deadline is Invalid")
-        
-        return deadline_datetime
-    
-    def save(self, commit=True):
-        task = super().save(commit=False)
-        if commit:
-            task.save()
 
+        return deadline_datetime
+
+    def save(self, commit=True):
+        task = super().save(commit=True)
         return task
 
 
-
 class TimeEntryForm(forms.ModelForm):
+    """Form to let users enter time"""
     class Meta:
         model = TimeLogging
         fields = ['start_time', 'end_time']
 
+    """set the form of start time and end time"""
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         input_formats=['%Y-%m-%dT%H:%M'],

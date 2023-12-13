@@ -15,6 +15,7 @@ class TeamFormTestCase(TestCase):
     ]
 
     def setUp(self):
+        """Sets up a default team to perform tests with"""
         self.user = User.objects.get(username='@johndoe')
         self.form_input = {
             'team_name': 'TestTeam',
@@ -25,6 +26,7 @@ class TeamFormTestCase(TestCase):
         }
 
     def test_form_has_necessary_fields(self):
+        """Ensures the form has appropriate fields"""
         form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertIn('team_name', form.fields)
         self.assertIn('team_members', form.fields)
@@ -32,6 +34,7 @@ class TeamFormTestCase(TestCase):
         self.assertTrue(isinstance(form.fields['team_members'], forms.ModelMultipleChoiceField))
 
     def test_valid_team_form(self):
+        """Ensures that a well-formed team is recognised as valid"""
         form = TeamCreateForm(data=self.form_input, user=self.user)
         self.assertTrue(form.is_valid())
 
@@ -42,6 +45,7 @@ class TeamFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_form_must_save_correctly(self):
+        """Tests the form saves to the database correctly"""
         form = TeamCreateForm(data=self.form_input, user=self.user)
         before_count = Team.objects.count()
         form.save()
@@ -61,6 +65,7 @@ class TeamFormTestCase(TestCase):
         self.assertEqual(TeamMembers, expected_users)
 
     def test_duplicate_team_name(self):
+        """Ensures team names must be unique"""
         Team.objects.create(team_name='TestTeam')
 
         form = TeamCreateForm(data=self.form_input, user=self.user)

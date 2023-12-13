@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from tasks import views
+from tasks.forms import CreateTaskForm1
+from tasks.forms import CreateTaskForm2
+from tasks.views import TaskDetailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,13 +30,14 @@ urlpatterns = [
     path('password/', views.PasswordView.as_view(), name='password'),
     path('profile/', views.ProfileUpdateView.as_view(), name='profile'),
     path('sign_up/', views.SignUpView.as_view(), name='sign_up'),
-    path('create_task/', views.CreateTaskView.as_view(), name='create_task'),
+    path('create_task/', views.CreateTaskWizard.as_view([CreateTaskForm1, CreateTaskForm2]), name='create_task'),
     path('team', views.TeamView.as_view(), name='team'),
     path('tasks/', views.TaskListView.as_view(), name='task_list'),
     path('tasks/<int:pk>', views.TaskDetailView.as_view(), name='task_detail'),
     path('tasks/<int:pk>/modify', views.ModifyTaskView.as_view(), name='modify_task'),
-    path('tasks/<int:pk>/delete', views.DeleteTaskView.as_view(), name='delete'),
+    path('tasks/<int:pk>/delete', views.DeleteTaskView.as_view(), name='delete_task'),
     path('teams/', views.TeamListView.as_view(), name='team_list'),
+    path('teams/<str:team_name>/delete', views.DeleteTeamView.as_view(), name='delete_team'),
     path('timelogging/<int:pk>/', views.TaskDetailView.as_view(), name='time_logging'),
     path('teams/<str:team_name>', views.TeamDetailView.as_view(), name='team_detail'),
     path('timeline/', views.TimelineView.as_view(), name='timeline'),
