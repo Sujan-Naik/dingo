@@ -7,6 +7,7 @@ from tasks.models import Task
 
 
 class Timeline(HTMLCalendar):
+    """Constructs a calendar-style task display HTML element"""
 
     def __init__(self, user):
 
@@ -14,6 +15,7 @@ class Timeline(HTMLCalendar):
         super(HTMLCalendar, self).__init__()
 
     def formatday(self, day, weekday):
+        """Displays tasks for a given day"""
         year = self.current_year
         month = self.current_month
         date = datetime.datetime(year, month, day)
@@ -26,7 +28,8 @@ class Timeline(HTMLCalendar):
         html += '</span> </div>'
         return html
 
-    def formatmonth(self, year, month, withyear=True):
+    def formatmonth(self, year, month, withyear=True):#
+        """Displays tasks for a given Month"""
         self.current_year = year
         self.current_month = month
 
@@ -38,7 +41,7 @@ class Timeline(HTMLCalendar):
         return html
 
     def formatyear(self, year, width=12):
-
+        """Displays tasks for a given year"""
         pagination = f'<h1> {year} </h1> <nav aria-label="Year navigation"> <ul class="pagination justify-content-center">'
         html = ''
         for month in range(1, 13):
@@ -48,6 +51,7 @@ class Timeline(HTMLCalendar):
         return pagination + html
 
     def returnHTMLPages(self):
+        """Displays tasks for from 2023 to the current year + 5"""
         oldest_date = 2023
         current_date = datetime.timezone.now().date().year + 5
         pagination = '<nav aria-label="navigation"> <ul class="pagination justify-content-center">'

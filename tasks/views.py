@@ -377,9 +377,11 @@ class TeamView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
 
 class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style from 2023 to the current year + 5"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.returnHTMLPages()
@@ -387,9 +389,11 @@ class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
         return context
 
 class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style for a given year"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar for that year to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.formatyear(self.kwargs['year'])
@@ -397,9 +401,11 @@ class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
         return context
 
 class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
+    """Displays tasks in a calendar style for a given month within a year"""
     template_name = ('timeline.html')
 
     def get_context_data(self, **kwargs):
+        """Passes HTML to represent the calendar for that month to the template"""
         context = super().get_context_data(**kwargs)
         calendar = Timeline(self.request.user)
         html_calendar = calendar.formatmonth(self.kwargs['year'], self.kwargs['month'])

@@ -208,6 +208,7 @@ class CreateTaskForm2(forms.ModelForm):
 
 
 class TeamCreateForm(forms.ModelForm):
+    """Creates teams and initialises members"""
     class Meta:
         model = Team
         fields = ['team_name', 'team_members']
@@ -228,6 +229,7 @@ class TeamCreateForm(forms.ModelForm):
         self.user = user
 
     def clean(self):
+        """Ensures teams have at least one member, a unique non-null name and the user is logged in"""
         cleaned_data = super().clean()
 
         team_members = cleaned_data.get('team_members')
@@ -248,6 +250,7 @@ class TeamCreateForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        """Saves team name and members to database"""
         team = super().save(commit=False)
         team.team_admin = self.user
         team.team_name = self.cleaned_data.get('team_name')
