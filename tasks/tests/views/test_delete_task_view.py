@@ -33,7 +33,7 @@ class TaskTests(TestCase):
         self.client.login(username='testuser', password='testpassword')
 
         # Get the URL for the delete task view, replace 'delete-task' with your actual URL pattern name
-        url = reverse('delete', kwargs={'pk': self.task.id})
+        url = reverse('delete_task', kwargs={'pk': self.task.id})
 
         # Make a GET request to the delete task view
         response = self.client.get(url)

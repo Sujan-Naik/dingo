@@ -28,20 +28,23 @@ class TeamListTestCase(TestCase):
 
 
 
-    # test if the team list exists
+
     def test_task_list_view(self):
+        """test if the task list shows"""
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('team_list'))
         self.assertEqual(response.status_code,200)
 
-    # test if the template is correct
+
     def test_template(self):
+        """ test if the template is correct"""
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('team_list'))
         self.assertTemplateUsed(response,'team_list.html')
 
-    # test if the list can show the correct team
+
     def test_task_list_show_task(self):
+        """test if the list can show the correct team"""
         self.client.login(username=self.user.username, password='Password123')
         response = self.client.get(reverse('team_list'))
         self.assertContains(response, self.team.team_name)

@@ -19,7 +19,7 @@ class TaskListTestCase(TestCase):
     ]
 
     def setUp(self):
-        # set the date for test
+        """set up the default data for task list"""
         self.user = User.objects.get(username='@johndoe')
         self.team = Team.objects.get(team_name='Default Team')
         self.form_input = {
@@ -107,6 +107,4 @@ class TaskListTestCase(TestCase):
         num_tasks = len(response.context['task_list'])
         self.assertEqual(num_tasks,2)
 
-    # test if no task to show
-    # def test_no_task(self):
-    #     pass
+
