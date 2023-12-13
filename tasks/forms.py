@@ -310,10 +310,12 @@ class ModifyTaskForm(forms.ModelForm):
 
 
 class TimeEntryForm(forms.ModelForm):
+    """Form to let users enter time"""
     class Meta:
         model = TimeLogging
         fields = ['start_time', 'end_time']
 
+    """set the form of start time and end time"""
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         input_formats=['%Y-%m-%dT%H:%M'],

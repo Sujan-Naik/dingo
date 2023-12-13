@@ -53,8 +53,6 @@ class TaskListView(LoginRequiredMixin, ListView):
             # return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
             return Task.objects.filter(members=self.request.user,**{filter_by: filter_string}).order_by(sort_by)
         else:
-            # If sort criteria is malformed use default sort
-            # return Task.objects.filter(author=self.request.user).order_by("deadline")
             return Task.objects.filter(members=self.request.user).order_by("deadline")
 
     def get_context_data(self, **kwargs):
@@ -153,6 +151,7 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
         return get_object_or_404(Team, team_name=self.kwargs['team_name'])
 
     def get_context_data(self, **kwargs):
+        """set the context data"""
         context = super().get_context_data(**kwargs)
         tasks = Task.objects.filter(team=self.get_object())
         context['team_task'] = tasks
@@ -163,6 +162,7 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        """post function prepares for deleting and inviting people from team"""
         team = self.get_object()
         action = request.POST.get('action')
 
@@ -170,10 +170,11 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
             form = InviteMemberForm(request.POST, instance=team)
             users_to_invite = request.POST.getlist('username')
             if form.is_valid():
-                # users_to_invite = form.cleaned_data.get('team_members')
                 for username in users_to_invite:
                     user = User.objects.get(username=username)
-                    # check if the user is already in the team
+
+                    """ check if the user is already in the team"""
+
                     if user in team.team_members.all():
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
@@ -426,7 +427,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
-
+    """Allow users to delete tasks in task detail"""
     model = Task
     template_name = "tasks/delete.html"
     context_object_name = 'task'
@@ -434,5 +435,20 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
         return reverse_lazy('task_list')
+
+class DeleteTeamView(LoginRequiredMixin, DeleteView):
+    """Allow users to delete teams in team detail"""
+    model = Team
+    template_name = "tasks/delete.html"
+    context_object_name = 'team'
+
+    def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "Team Deleted Successfully")
+        return reverse_lazy('team_list')
+
+
+    def get_object(self, queryset=None):
+        team_name = self.kwargs['team_name']
+        return get_object_or_404(Team, team_name=team_name)
 
 

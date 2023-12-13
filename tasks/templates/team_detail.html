@@ -51,5 +51,10 @@
   </form>
 
 {% endif %}
-
+<h3>Manage Team:</h3>
+<div>
+  <a href="{% url 'delete_team' team.team_name %}">
+    <button>Delete Team</button>
+  </a>
+</div>
 {% endblock %}
