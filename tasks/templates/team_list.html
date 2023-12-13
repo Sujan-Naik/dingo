@@ -1,13 +1,43 @@
 {% extends 'dashboard.html' %}
 {% block content %}
+<div class="container">
   <h2>My Teams</h2>
-  <ul>
-    {% for team in team_list %}
-    <span class="team-number">{{ forloop.counter }}.</span>
-<!--    add team counter-->
-      <li><a href="{% url 'team_detail' team.team_name %}">{{ team.team_name }}</a></li>
-    {% empty %}
-      <li>No teams found</li>
-    {% endfor %}
-  </ul>
+  <div class="row pb-2">
+    {% if team_list|length == 1%}
+      <b>1 Team Total</b>
+    {% else %}
+      <b>{{ team_list|length }} Teams Total</b>
+    {% endif %}
+  </div>
+  <div class="row pb-2">
+    <div class="col-4">
+      <b>Name</b>
+    </div>
+    <div class="col-4">
+      <b>Admin</b>
+    </div>
+    <div class="col-4">
+      <b>Number of Members</b>
+    </div>
+  </div>
+  {% for team in team_list %}
+  <div class="row">
+    <div class="col-4">
+      <a href="{% url 'team_detail' team.team_name %}">{{ team.team_name }}</a>
+    </div>
+    <div class="col-4">
+      {% if team.team_admin == user %}
+        <p>{{ team.team_admin.username }} <span class="blue-text">(you)</span></p>
+      {% else %}
+        <p>{{ team.team_admin.username }}</p>
+      {% endif %}
+    </div>
+    <div class="col-4">
+      <p>{{ team.team_members.all|length }}</p>
+    </div>
+  </div>
+  {% empty %}
+    <p>No teams found</p>
+  {% endfor %}
+</div>  
 {% endblock %}

@@ -1,18 +1,73 @@
-{% extends 'dashboard.html' %}
+{% extends 'base_content.html' %}
 {% block content %}
+<div class="container">
   <h2>My Tasks</h2>
-  <form action="{% url 'task_list' %}" method="post">
-    {% csrf_token %}
-    {% include 'partials/bootstrap_form.html' with form=form %}
-    <input type="submit" value="Sort" class="btn btn-primary">
+  <form action="{% url 'task_list' %}" method="post"> {% csrf_token %}
+    <div class="row">
+      <div class="col-12">
+        <label>Sort:</label>
+        {{ form.sort_by }}
+        {{ form.asc_or_desc }}
+        <label for="id_asc_or_desc" id="sort_arrow"><b id="sort_arrow_contents">^</b></label>
+        <label>Filter:</label>
+        {{ form.filter_by }}
+        {{ form.filter_string }}
+        <input type="submit" value="Sort" class="btn btn-primary">
+      </div>
+    </div>
   </form>
-  <ul>
-    {% for task in task_list %}
-    <span class="task-number">{{ forloop.counter }}.</span>
-<!--    add task counter-->
-      <li><a href="{% url 'task_detail' task.id %}"> {{ task.name }}</a></li>
-    {% empty %}
-      <li>No tasks found</li>
-    {% endfor %}
-  </ul>
+  <div class="row pb-2">
+    {% if task_list|length == 1%}
+      <b>1 Task Total</b>
+    {% else %}
+      <b>{{ task_list|length }} Tasks Total</b>
+    {% endif %}
+  </div>
+  <div class="row pb-2">
+    <div class="col">
+      <b>Name</b>
+    </div>
+    <div class="col">
+      <b>Deadline</b>
+    </div>
+    <div class="col">
+      <b>Priority</b>
+    </div>
+    <div class="col">
+      <b>Team</b>
+    </div>
+    <div class="col">
+      <b>Author</b>
+    </div>
+  </div>
+  {% for task in task_list %}
+    <div class="row">
+      <div class="col">
+        <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
+      </div>
+      <div class="col">
+        {% if task.deadline < today %}
+          <p class="red-text">{{ task.deadline }} - <b>OVERDUE</b></p>
+        {% else %}
+          <p>{{ task.deadline }}</p>
+        {% endif %}
+      </div>
+      <div class="col">
+        <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+      </div>
+      <div class="col">
+        <a href="{% url 'team_detail' task.team.team_name %}">{{ task.team.team_name }}</a>
+      </div>
+      <div class="col">
+        {% if task.author == user %}
+          <p>{{ task.author.username }} <span class="blue-text">(you)</span></p>
+        {% else %}
+          <p>{{ task.author.username }}</p>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p>No tasks found</p>
+  {% endfor %}
+</div>
 {% endblock %}

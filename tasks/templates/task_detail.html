@@ -1,64 +1,65 @@
 {% extends 'task_list.html' %}
 
 {% block content %}
+<div class="container">
+  <style>
+    .blank-line {
+      margin-bottom: 20px; /* You can adjust the value to control the amount of space */
+    }
+  </style>
+  <h2>{{ task.name }}</h2>
+  <p><strong>Description: </strong>{{ task.description }}</p>
+  <span><strong>Due Date: </strong>{{ task.deadline }}</span>
+  <div class="blank-line"></div>
+  <p><strong>Task belongs to: <a href="{% url 'team_detail' task.team.team_name %}"> {{ task.team.team_name }}</a></strong></p>
 
-<style>
-  .blank-line {
-    margin-bottom: 20px; /* You can adjust the value to control the amount of space */
-  }
-</style>
-<h2>{{ task.name }}</h2>
-<p><strong>Description: </strong>{{ task.description }}</p>
-<span><strong>Due Date: </strong>{{ task.deadline }}</span>
-<div class="blank-line"></div>
-<p><strong>Task belongs to: <a href="{% url 'team_detail' task.team.team_name %}"> {{ task.team.team_name }}</a></strong></p>
+  <!--check if has time-->
+  {% if time_left %}
+  {% if days_left >= 0 %}
+  <span><strong>Time Remaining:</strong> {{ days_left }} days
+    {{ hours_left }} hours
+    {{ minutes_left }} minutes
+  </span>
 
-<!--check if has time-->
-{% if time_left %}
-{% if days_left >= 0 %}
-<span><strong>Time Remaining:</strong> {{ days_left }} days
-  {{ hours_left }} hours
-  {{ minutes_left }} minutes
-</span>
+  {% else %}
+  <span><strong>Time Remaining:</strong> Expired</span>
+  {% endif %}
+  {% else %}
+  <span><strong>Time Remaining:</strong> Expired</span>
 
-{% else %}
-<span><strong>Time Remaining:</strong> Expired</span>
-{% endif %}
-{% else %}
-<span><strong>Time Remaining:</strong> Expired</span>
+  {% endif %}
+  <div class="blank-line"></div>
+  <span><strong>Members assigned to this task:</strong></span>
 
-{% endif %}
-<div class="blank-line"></div>
-<span><strong>Members in this task:</strong></span>
+  {% for member in task.members.all %}
+  <li> {{ member.username }}  </li>
+  {% endfor %}
+  <div class="blank-line"></div>
+  <p><strong>Author: </strong>{{ task.author }}</p>
+  <p><strong>Time spent on this task: </strong></p>
+  <ul>
+      {% for time in time_loggings %}
+          <li>{{ time.user.username }} spent {{ time.spent_days}} days,
+              {{ time.spent_hours }} hours,
+              {{ time.spent_minutes }} minutes,
+              on {{ time.start_time }} to {{ time.end_time }}</li>
+      {% endfor %}
+  </ul>
 
-{% for member in task.members.all %}
-<li> {{ member.username }}  </li>
-{% endfor %}
-<div class="blank-line"></div>
-<p><strong>Author: </strong>{{ task.author }}</p>
-<p><strong>Time spent on this task: </strong></p>
-<ul>
-    {% for time in time_loggings %}
-        <li>{{ time.user.username }} spent {{ time.spent_days}} days,
-            {{ time.spent_hours }} hours,
-            {{ time.spent_minutes }} minutes,
-            on {{ time.start_time }} to {{ time.end_time }}</li>
-    {% endfor %}
-</ul>
+  <form method="post" action="{% url 'time_logging' task.id %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Log Time</button>
+  </form>
 
-<form method="post" action="{% url 'time_logging' task.id %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Log Time</button>
-</form>
-
-<!-- Add buttons for modify and delete -->
-<div>
-  <a href="{% url 'modify_task' task.id %}">
-    <button>Modify Task</button>
-  </a>
-  <a href="{% url 'delete_task' task.id %}">
-    <button>Delete Task</button>
-  </a>
+  <!-- Add buttons for modify and delete -->
+  <div>
+    <a href="{% url 'modify_task' task.id %}">
+      <button>Modify Task</button>
+    </a>
+    <a href="{% url 'delete_task' task.id %}">
+      <button>Delete Task</button>
+    </a>
+  </div>
 </div>
 {% endblock %}

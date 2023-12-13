@@ -15,6 +15,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
+from django.db.models import Q
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, \
     TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
@@ -25,39 +26,66 @@ from .html_util.timeline import Timeline
 @login_required
 def dashboard(request):
     """Display the current user's dashboard."""
-
     current_user = request.user
-    return render(request, 'dashboard.html', {'user': current_user})
-
+    today = timezone.now()
+    upcoming_tasks = Task.objects.filter(members=current_user, deadline__gte=today).order_by('deadline')[:10]
+    overdue_tasks = Task.objects.filter(members=current_user, deadline__lt=today).order_by('deadline')[:10]
+    context = {'user': current_user, 'upcoming_tasks':upcoming_tasks, 'overdue_tasks':overdue_tasks}
+    return render(request, 'dashboard.html', context)
 
 @login_prohibited
 def home(request):
     """Display the application's start/home screen."""
-
     return render(request, 'home.html')
 
+def timezone_select(request):
+    """Allows users to select their timezone"""
+    if request.method == 'POST':
+        request.session["django_timezone"] = request.POST["timezone"]
+        return redirect(request.META['HTTP_REFERER'])
+    else:
+        return redirect('/')
 
 class TaskListView(LoginRequiredMixin, ListView):
     """View the task list"""
     model = Task
     template_name = 'task_list.html'
     context_object_name = 'task_list'
+    # Used to fill the sorting form with the user's previous input
+    user_request = None
 
     def get_queryset(self):
         """Filter tasks based on the logged-in user + sort criteria"""
-        form = TaskSortForm(self.request.GET)
+        request = self.request.GET.copy()
+        if 'asc_or_desc' in request:
+            if request['asc_or_desc'] == "on":
+                request['asc_or_desc'] = True
+            else:
+                request['asc_or_desc'] = False
+
+        form = TaskSortForm(request)
         if form.is_valid():
-            sort_by = form.cleaned_data.get("asc_or_desc", "") + form.cleaned_data.get("sort_by")
+            self.user_request = request
+
+            if form.cleaned_data.get("asc_or_desc"):
+                sort_by = "-" + form.cleaned_data.get("sort_by")
+            else:
+                sort_by = form.cleaned_data.get("sort_by")
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
-            # return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
-            return Task.objects.filter(members=self.request.user,**{filter_by: filter_string}).order_by(sort_by)
+            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user),**{filter_by:filter_string}).order_by(sort_by)
         else:
-            return Task.objects.filter(members=self.request.user).order_by("deadline")
+            # If sort criteria is malformed use default sort
+            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = TaskSortForm()
+        if self.user_request is not None:
+            context['form'] = TaskSortForm(self.user_request)
+        else:
+            context['form'] = TaskSortForm()
+        # Need current date to show which tasks are overdue
+        context['today'] = timezone.now()
         return context
 
     def post(self, request, *args, **kwargs):

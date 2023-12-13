@@ -83,7 +83,7 @@ class TaskListTestCase(TestCase):
     def test_valid_sort(self):
         """Test if the page is correctly returned with a valid sort condition"""
         self.client.login(username=self.user.username, password='Password123')
-        sort_conditions = "?sort_by=deadline&asc_or_desc=-&filter_by=name&filter_string=testing"
+        sort_conditions = "?sort_by=deadline&asc_or_desc=on&filter_by=name&filter_string=testing"
         response = self.client.get(reverse('task_list') + sort_conditions)
         self.assertEqual(response.status_code,200)
         self.assertTemplateUsed(response,'task_list.html')
@@ -93,7 +93,7 @@ class TaskListTestCase(TestCase):
     def test_invalid_sort(self):
         """Test if the page is correctly returned with an invalid sort condition"""
         self.client.login(username=self.user.username, password='Password123')
-        sort_conditions = "?sort_by=bob%asc_or_desc=-&filter_by=bad_filter"
+        sort_conditions = "?sort_by=bob%asc_or_desc=on&filter_by=bad_filter"
         response = self.client.get(reverse('task_list') + sort_conditions)
         self.assertEqual(response.status_code,200)
         self.assertTemplateUsed(response,'task_list.html')

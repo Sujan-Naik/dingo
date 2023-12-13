@@ -1,4 +1,5 @@
 """Forms for the tasks app."""
+import pytz
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.validators import RegexValidator
@@ -283,7 +284,7 @@ class TaskSortForm(forms.Form):
     ]
 
     sort_by = forms.ChoiceField(choices=sorting_choices)
-    asc_or_desc = forms.ChoiceField(choices=[("", "^"), ("-", "V")], required=False)
+    asc_or_desc = forms.BooleanField(required=False)
     filter_by = forms.ChoiceField(choices=filter_choices)
     filter_string = forms.CharField(required=False)
 
@@ -330,3 +331,7 @@ class TimeEntryForm(forms.ModelForm):
         input_formats=['%Y-%m-%dT%H:%M'],
         help_text='Format: YYYY-MM-DDTHH:MM'
     )
+
+class TimezoneForm(forms.Form):
+    """Allows the user to select their timezone"""
+    timezone = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=False)
