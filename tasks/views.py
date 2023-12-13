@@ -405,35 +405,7 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
-# class ModifyTaskView(LoginRequiredMixin, UpdateView):
-
-#     model = Task
-#     template_name = "modify_task.html"
-#     form_class = ModifyTaskForm
-
-#     def get_object(self, queryset=None):
-#         task = super().get_object(queryset=queryset)
-#         return task
-    
-#     def form_valid(self, form):
-#         form.instance.author = self.request.user
-#         response = super().form_valid(form)
-
-#         for member in self.object.members.all():
-#             Notifications.objects.create(
-#                 recipient=member,
-#                 sender=self.request.user,
-#                 message=f'Task: {self.object.name} has been modified.',
-#             )
-
-#         return response
-    
-#     def get_success_url(self):
-#         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
-#         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-
-
-
+        
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
     model = Task
     template_name = "modify_task.html"
@@ -450,24 +422,41 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         task = form.save(commit=False)
-        
+
         # Process the modify members form
         modify_members_form = ModifyTaskMembersForm(
-            self.request.POST, 
-            instance=task, 
+            self.request.POST,
+            instance=task,
             initial={'add_members': task.members.all(), 'remove_members': task.members.all()}
         )
+
         if modify_members_form.is_valid():
             add_members = modify_members_form.cleaned_data.get('add_members')
             remove_members = modify_members_form.cleaned_data.get('remove_members')
 
             # Add new members
             for member in add_members:
-                task.members.add(member)
+                if member not in task.members.all():  # Check if the member is not already in the task
+                    task.members.add(member)
+
+                    # Notify added members about the assignment
+                    Notifications.objects.create(
+                        recipient=member,
+                        sender=self.request.user,
+                        message=f'You have been assigned to the task: {task.name}.',
+                    )
 
             # Remove members
             for member in remove_members:
-                task.members.remove(member)
+                if member in task.members.all():  # Check if the member is in the task
+                    task.members.remove(member)
+
+                    # Notify removed members about the removal
+                    Notifications.objects.create(
+                        recipient=member,
+                        sender=self.request.user,
+                        message=f'You have been removed from the task: {task.name}.',
+                    )
 
         task.save()
 
@@ -484,7 +473,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-        
+
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
