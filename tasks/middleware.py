@@ -1,5 +1,9 @@
 """Middleware for the tasks app"""
-import zoneinfo
+# zoneinfo was added in Python 3.9
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
 import pytz
 from django.utils import timezone
 
