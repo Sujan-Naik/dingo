@@ -24,13 +24,12 @@ from .html_util.timeline import Timeline
 @login_required
 def dashboard(request):
     """Display the current user's dashboard."""
-
     current_user = request.user
     today = timezone.now()
-    upcoming_tasks = Task.objects.filter(members=current_user, deadline__gte=today)
-    overdue_tasks = Task.objects.filter(members=current_user, deadline__lt=today)
-    return render(request, 'dashboard.html', {'user': current_user, 'upcoming_tasks':upcoming_tasks, 'overdue_tasks':overdue_tasks})
-
+    upcoming_tasks = Task.objects.filter(members=current_user, deadline__gte=today).order_by('deadline')[:10]
+    overdue_tasks = Task.objects.filter(members=current_user, deadline__lt=today).order_by('deadline')[:10]
+    context = {'user': current_user, 'upcoming_tasks':upcoming_tasks, 'overdue_tasks':overdue_tasks}
+    return render(request, 'dashboard.html', context)
 
 @login_prohibited
 def home(request):
