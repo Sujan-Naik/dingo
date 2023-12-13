@@ -9,10 +9,8 @@
     <li class="nav-item">
       <a class="nav-link" href="{% url 'timeline' %}">Timeline</a>
     </li>
-  </ul>
-  <ul class="navbar-nav ms-auto">
-    <li class="nav-item dropdown pe-2">
-      <a class="nav-link" href="#" id="creation-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <li class="nav-item dropdown ps-lg-2">
+      <a class="nav-link ps-2" href="#" id="creation-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         Create
       </a>
       <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="creation-dropdown">
@@ -20,6 +18,17 @@
         <li><a class="dropdown-item" href="{% url 'team' %}">New Team</a></li>
       </ul>
     </li>
+  </ul>
+  <ul class="navbar-nav ms-auto">
+    <form action="{% url 'timezone' %}" method="post"> {% csrf_token %}
+      <div class="input-group pe-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text">Timezone</span>
+        </div>
+        {{ timezone_form }}
+        <input type="submit" value="Save" class="btn btn-primary">
+      </div>
+    </form>
     <li class="nav-item dropdown">
       <a class="nav-link" href="#" id="user-account-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="bi-person-circle"></span>

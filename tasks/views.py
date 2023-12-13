@@ -34,9 +34,15 @@ def dashboard(request):
 @login_prohibited
 def home(request):
     """Display the application's start/home screen."""
-
     return render(request, 'home.html')
 
+def timezone_select(request):
+    """Allows users to select their timezone"""
+    if request.method == 'POST':
+        request.session["django_timezone"] = request.POST["timezone"]
+        return redirect(request.META['HTTP_REFERER'])
+    else:
+        return redirect('/')
 
 class TaskListView(LoginRequiredMixin, ListView):
     """View the task list"""
