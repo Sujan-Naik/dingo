@@ -14,8 +14,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, \
-    ModifyTaskForm, TimeEntryForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm, TeamCreateForm, InviteMemberForm, ModifyTaskForm, TimeEntryForm, ModifyTaskMembersForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging, Notifications
 from .html_util.timeline import Timeline
@@ -406,8 +405,36 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
-class ModifyTaskView(LoginRequiredMixin, UpdateView):
+# class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
+#     model = Task
+#     template_name = "modify_task.html"
+#     form_class = ModifyTaskForm
+
+#     def get_object(self, queryset=None):
+#         task = super().get_object(queryset=queryset)
+#         return task
+    
+#     def form_valid(self, form):
+#         form.instance.author = self.request.user
+#         response = super().form_valid(form)
+
+#         for member in self.object.members.all():
+#             Notifications.objects.create(
+#                 recipient=member,
+#                 sender=self.request.user,
+#                 message=f'Task: {self.object.name} has been modified.',
+#             )
+
+#         return response
+    
+#     def get_success_url(self):
+#         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
+#         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+
+
+
+class ModifyTaskView(LoginRequiredMixin, UpdateView):
     model = Task
     template_name = "modify_task.html"
     form_class = ModifyTaskForm
@@ -415,24 +442,50 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
         return task
-    
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        response = super().form_valid(form)
 
-        for member in self.object.members.all():
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['modify_members_form'] = ModifyTaskMembersForm(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        task = form.save(commit=False)
+        
+        # Process the modify members form
+        modify_members_form = ModifyTaskMembersForm(
+            self.request.POST, 
+            instance=task, 
+            initial={'add_members': task.members.all(), 'remove_members': task.members.all()}
+        )
+        if modify_members_form.is_valid():
+            add_members = modify_members_form.cleaned_data.get('add_members')
+            remove_members = modify_members_form.cleaned_data.get('remove_members')
+
+            # Add new members
+            for member in add_members:
+                task.members.add(member)
+
+            # Remove members
+            for member in remove_members:
+                task.members.remove(member)
+
+        task.save()
+
+        # Notify team members about the modification
+        for member in task.members.all():
             Notifications.objects.create(
                 recipient=member,
                 sender=self.request.user,
-                message=f'Task: {self.object.name} has been modified.',
+                message=f'Task: {task.name} has been modified.',
             )
 
-        return response
-    
+        return super().form_valid(form)
+
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-    
+        
+
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
     template_name = "tasks/delete.html"

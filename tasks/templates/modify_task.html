@@ -7,6 +7,32 @@
             <form action="{% url 'modify_task' task.id %}" method="post">
                 {% csrf_token %}
                 {% include 'partials/bootstrap_form.html' with form=form %}
+
+                <!-- Display the ModifyTaskMembersForm fields with Bootstrap styling -->
+                {% with modify_members_form as members_form %}
+                    <div class="mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Add Members</h5>
+                                <div class="form-check">
+                                    {{ members_form.add_members }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Remove Members</h5>
+                                <div class="form-check">
+                                    {{ members_form.remove_members }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
+
                 <input type="submit" value="Save Changes" class="btn btn-primary">
             </form>
         </div>
