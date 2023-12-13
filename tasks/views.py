@@ -26,7 +26,10 @@ def dashboard(request):
     """Display the current user's dashboard."""
 
     current_user = request.user
-    return render(request, 'dashboard.html', {'user': current_user})
+    today = timezone.now()
+    upcoming_tasks = Task.objects.filter(members=current_user, deadline__gte=today)
+    overdue_tasks = Task.objects.filter(members=current_user, deadline__lt=today)
+    return render(request, 'dashboard.html', {'user': current_user, 'upcoming_tasks':upcoming_tasks, 'overdue_tasks':overdue_tasks})
 
 
 @login_prohibited

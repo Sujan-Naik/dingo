@@ -1,33 +1,70 @@
 {% extends 'base_content.html' %}
 {% block content %}
-
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1>Welcome to your dashboard {{ user.username }}</h1>
+      <h1 class="blue-text">Good to see you, {{ user.username }}</h1>
     </div>
   </div>
   <div class="row">
-    <button type="button">
-      <a href="{% url 'team' %}">Go to the team page!</a>
-    </button>
-  </div>
-    <div class="row">
-    <button type="button">
-      <a href="{% url 'timeline' %}">Timeline</a>
-    </button>
-  </div>
-  <div class="row">
-    <button type="button">
-      <a href="{% url 'create_task' %}" class="btn btn-lg btn-secondary">Create a new task</a>
-    </button>
-
-    <nav>
-      <a href="{% url 'task_list' %}">My Tasks</a>
-    </nav>
-    <nav>
-      <a href="{% url 'team_list' %}">My Teams</a>
-    </nav>
+    <div class="col-6">
+      <h2>Upcoming Tasks</h2>
+      <div class="row pb-2">
+        <div class="col">
+          <b>Name</b>
+        </div>
+        <div class="col">
+          <b>Deadline</b>
+        </div>
+        <div class="col">
+          <b>Priority</b>
+        </div>
+      </div>
+      {% for task in upcoming_tasks %}
+        <div class="row">
+          <div class="col">
+            <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
+          </div>
+          <div class="col">
+            <p>{{ task.deadline }}</p>
+          </div>
+          <div class="col">
+            <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+          </div>
+        </div>
+      {% empty %}
+        <p>No upcoming tasks</p>
+      {% endfor %}
+    </div>
+    <div class="col-6">
+      <h2>Overdue Tasks</h2>
+      <div class="row pb-2">
+        <div class="col">
+          <b>Name</b>
+        </div>
+        <div class="col">
+          <b>Deadline</b>
+        </div>
+        <div class="col">
+          <b>Priority</b>
+        </div>
+      </div>
+      {% for task in overdue_tasks %}
+      <div class="row">
+        <div class="col">
+          <a href="{% url 'task_detail' task.id %}">{{ task.name }}</a>
+        </div>
+        <div class="col">
+          <p>{{ task.deadline }}</p>
+        </div>
+        <div class="col">
+          <span class="task-priority priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+        </div>
+      </div>
+      {% empty %}
+        <p>No overdue tasks</p>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endblock %}
