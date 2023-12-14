@@ -20,8 +20,8 @@ class Command(BaseCommand):
     """Build automation command to seed the database."""
 
     USER_COUNT = 300
-    TEAM_COUNT = 100
-    TASKS_PER_TEAM = 300
+    TEAM_COUNT = 250
+    TASKS_PER_TEAM = 50
     DEFAULT_PASSWORD = 'Password123'
     help = 'Seeds the database with sample data'
 
@@ -59,9 +59,9 @@ class Command(BaseCommand):
                 "admin": team_admin
             })
 
-        """Generate 400 random tasks for the team"""
+        """Generate 200 random tasks for the team"""
 
-        for i in range(400):
+        for i in range(200):
             task_member_size = randint(2, 3)
             self.generate_task(john, new_team, task_member_size)
             self.generate_task(jane, new_team, task_member_size)
@@ -182,8 +182,8 @@ class Command(BaseCommand):
         """Generates random data for a team"""
 
         name = self.faker.company()
-        """Team size is between 25 and 50 members"""
-        team_size = randint(25, 50)
+        """Team size is between 20 and 40 members"""
+        team_size = randint(20, 40)
         members = sample(self.generated_users, team_size - 1)
         members.append(admin)
 

@@ -11,6 +11,12 @@
       <li>No members found</li>
     {% endfor %}
   </ul>
+    <h3>Manage Team:</h3>
+  <div>
+    <a href="{% url 'delete_team' team.team_name %}">
+      <button>Delete Team</button>
+    </a>
+  </div>
 
   <p><strong>Tasks belonging to this team: </strong></p>
   {% if no_task %}
@@ -50,11 +56,5 @@
     </form>
 
   {% endif %}
-  <h3>Manage Team:</h3>
-  <div>
-    <a href="{% url 'delete_team' team.team_name %}">
-      <button>Delete Team</button>
-    </a>
-  </div>
 </div>
 {% endblock %}
