@@ -19,6 +19,8 @@ class CreateTaskFormTestCase(TestCase):
         ]
 
     def setUp(self):
+        """Sets the deadline, user and team"""
+
         deadline = datetime(2024, 12, 15, 16, 00)
         deadline = deadline.replace(tzinfo=timezone.utc)
         self.user = User.objects.get(username='@johndoe')
@@ -38,10 +40,14 @@ class CreateTaskFormTestCase(TestCase):
             }
 
     def test_valid_create_task_form(self):
+        """Creates a valid form"""
+
         form = CreateTaskForm2(user=self.user, team=self.team, data=self.form2_input)
         self.assertTrue(form.is_valid())
 
     def test_form_has_necessary_fields(self):
+        """Confirms if the form has the correct fields"""
+
         form = CreateTaskForm2(user=self.user, team=self.team, data=self.form2_input)
         self.assertIn('members', form.fields)
 
@@ -51,11 +57,15 @@ class CreateTaskFormTestCase(TestCase):
         self.assertTrue(isinstance(checkbox_widget, forms.CheckboxSelectMultiple))
 
     def test_form_must_have_user(self):
+        """Checks if the form fails without a user"""
+
         form = CreateTaskForm2(user=None, team=self.team, data=self.form2_input)
         form.full_clean()
         self.assertFalse(form.is_valid())
 
     def test_form_must_have_team(self):
+        """Checks if the form fails without a team."""
+
         form = CreateTaskForm2(user=self.user, team=None, data=self.form2_input)
         form.full_clean()
         self.assertFalse(form.is_valid())
