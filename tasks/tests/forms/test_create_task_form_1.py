@@ -19,6 +19,8 @@ class CreateTaskFormTestCase(TestCase):
         ]
 
     def setUp(self):
+        """Set the user, team, deadline and form input"""
+
         deadline = datetime(2024, 12, 15, 16, 00)
         deadline = deadline.replace(tzinfo=timezone.utc)
         self.user = User.objects.get(username='@johndoe')
@@ -33,10 +35,14 @@ class CreateTaskFormTestCase(TestCase):
         }
 
     def test_valid_create_task_form(self):
+        """Tests if the form is valid with correct form data supplied"""
+
         form = CreateTaskForm1(user=self.user, data=self.form_input)
         self.assertTrue(form.is_valid())
 
     def test_form_has_necessary_fields(self):
+        """Check that the form has the correct number and type of fields"""
+
         form = CreateTaskForm1()
         self.assertIn('name', form.fields)
         self.assertIn('description', form.fields)
@@ -50,6 +56,8 @@ class CreateTaskFormTestCase(TestCase):
         self.assertTrue(isinstance(datetime_widget, forms.DateTimeInput))
 
     def test_deadline_must_be_in_future(self):
+        """Inputs a date from the past"""
+
         past_datetime = datetime(2020, 12, 15, 16, 00)
         past_datetime = past_datetime.replace(tzinfo=timezone.utc)
         self.form_input['deadline'] = past_datetime
@@ -57,6 +65,8 @@ class CreateTaskFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_form_must_have_user(self):
+        """Creates a form without the user"""
+
         form = CreateTaskForm1(user=None, data=self.form_input)
         form.full_clean()
         self.assertFalse(form.is_valid())
