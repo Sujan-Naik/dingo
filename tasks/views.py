@@ -17,6 +17,9 @@ from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
 from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm, ModifyTaskMembersForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, \
+    InviteMemberForm, \
+    TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging, Notifications
 from .html_util.timeline import Timeline
@@ -25,6 +28,7 @@ from .html_util.timeline import Timeline
 @login_required
 def dashboard(request):
     """Display the current user's dashboard."""
+
     current_user = request.user
     today = timezone.now()
     upcoming_tasks = Task.objects.filter(members=current_user, deadline__gte=today).order_by('deadline')[:10]
@@ -35,6 +39,7 @@ def dashboard(request):
 @login_prohibited
 def home(request):
     """Display the application's start/home screen."""
+
     return render(request, 'home.html')
 
 def timezone_select(request):
@@ -121,7 +126,9 @@ class TaskListView(LoginRequiredMixin, ListView):
         asc_or_desc = request.POST.get('asc_or_desc')
         filter_by = request.POST.get('filter_by')
         filter_string = request.POST.get('filter_string')
-        return HttpResponseRedirect(reverse('task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
+        return HttpResponseRedirect(reverse(
+            'task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
+
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
@@ -140,7 +147,6 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         time_left = context['task'].deadline - now
         time_loggings = TimeLogging.objects.filter(task=context['task'])
 
-
         for time_entry in time_loggings:
             time_entry.spent_days = (time_entry.end_time - time_entry.start_time).days
             time_entry.spent_hours, remainder = divmod((time_entry.end_time - time_entry.start_time).seconds, 3600)
@@ -148,7 +154,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
         context['time_loggings'] = time_loggings;
 
-        if time_left :
+        if time_left:
             context['time_left'] = 1
 
             context['days_left'] = time_left.days
@@ -162,11 +168,11 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
         return context
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         task = self.get_object()
 
         context = {
-            'task':task
+            'task': task
         }
         if request.method == 'POST':
             form = TimeEntryForm(request.POST)
@@ -405,7 +411,6 @@ class CreateTaskWizard(SessionWizardView):
 
         return kwargs
 
-
     def done(self, form_list, form_dict, **kwargs):
         """Saves the task using verified form information from both pages"""
 
@@ -427,6 +432,7 @@ class CreateTaskWizard(SessionWizardView):
                 task=task,
             )
         return HttpResponseRedirect(reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN))
+
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""
@@ -459,6 +465,7 @@ class TeamView(LoginRequiredMixin, FormView):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
 
+
 class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style from 2023 to the current year + 5"""
     template_name = ('timeline.html')
@@ -470,6 +477,7 @@ class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
         html_calendar = calendar.returnHTMLPages()
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
+
 
 class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style for a given year"""
@@ -483,6 +491,7 @@ class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
+
 class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style for a given month within a year"""
     template_name = ('timeline.html')
@@ -495,7 +504,9 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
+
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
+
     model = Task
     template_name = "modify_task.html"
     form_class = ModifyTaskForm
@@ -562,7 +573,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-    
+
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     model = Task
@@ -595,7 +606,7 @@ class InboxPageView(ListView):
 
     def get_queryset(self):
         return self.model.objects.filter(recipient=self.request.user)
-    
+
     def post(self, request, *args, **kwargs):
         action = request.POST.get('action')
 
@@ -607,6 +618,7 @@ class InboxPageView(ListView):
         return HttpResponseRedirect(reverse_lazy('inbox'))
 
 
+
 class DeleteTeamView(LoginRequiredMixin, DeleteView):
     """Allow users to delete teams in team detail"""
     model = Team
@@ -616,7 +628,6 @@ class DeleteTeamView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Team Deleted Successfully")
         return reverse_lazy('team_list')
-
 
     def get_object(self, queryset=None):
         team_name = self.kwargs['team_name']
