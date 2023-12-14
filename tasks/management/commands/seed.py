@@ -97,20 +97,22 @@ class Command(BaseCommand):
 
         team_count = Team.objects.count()
 
-        """Prevent charlie from being a team leader"""
-
         charlie = User.objects.get(username="@charlie")
-        self.generated_users.remove(charlie)
-        team_leaders = sample(self.generated_users, self.TEAM_COUNT)
-        self.generated_users.append(charlie)
-        counter = 0
 
         while team_count < self.TEAM_COUNT:
             print(f"Seeding team {team_count}/{self.TEAM_COUNT}", end='\r')
-            new_team = self.generate_team(team_leaders[counter])
+
+            """Prevent charlie from being a team leader"""
+            self.generated_users.remove(charlie)
+
+            random_user_index = randint(0, len(self.generated_users) - 1)
+            leader = self.generated_users[random_user_index]
+
+            self.generated_users.append(charlie)
+
+            new_team = self.generate_team(leader)
             self.generated_teams.append(new_team)
             team_count = Team.objects.count()
-            counter += 1
 
         print("Team seeding complete.      ")
 
