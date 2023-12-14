@@ -13,8 +13,6 @@ class NotificationsModelTest(TestCase):
 
     def setUp(self):
 
-        
-
         self.sender_user = User.objects.get(username='@johndoe')
         self.recipient_user = User.objects.get(username='@janedoe')
 
