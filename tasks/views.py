@@ -15,7 +15,8 @@ from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, RedirectView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, \
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, \
+    InviteMemberForm, \
     TaskSortForm, ModifyTaskForm, TimeEntryForm
 from tasks.helpers import login_prohibited
 from .models import Task, Team, User, TimeLogging
@@ -51,7 +52,7 @@ class TaskListView(LoginRequiredMixin, ListView):
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
             # return Task.objects.filter(**{"author":self.request.user, filter_by:filter_string}).order_by(sort_by)
-            return Task.objects.filter(members=self.request.user,**{filter_by: filter_string}).order_by(sort_by)
+            return Task.objects.filter(members=self.request.user, **{filter_by: filter_string}).order_by(sort_by)
         else:
             return Task.objects.filter(members=self.request.user).order_by("deadline")
 
@@ -66,7 +67,9 @@ class TaskListView(LoginRequiredMixin, ListView):
         asc_or_desc = request.POST.get('asc_or_desc')
         filter_by = request.POST.get('filter_by')
         filter_string = request.POST.get('filter_string')
-        return HttpResponseRedirect(reverse('task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
+        return HttpResponseRedirect(reverse(
+            'task_list') + f"?sort_by={sort_by}&asc_or_desc={asc_or_desc}&filter_by={filter_by}&filter_string={filter_string}")
+
 
 class TaskDetailView(LoginRequiredMixin, DetailView):
     """view the task detail"""
@@ -85,7 +88,6 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         time_left = context['task'].deadline - now
         time_loggings = TimeLogging.objects.filter(task=context['task'])
 
-
         for time_entry in time_loggings:
             time_entry.spent_days = (time_entry.end_time - time_entry.start_time).days
             time_entry.spent_hours, remainder = divmod((time_entry.end_time - time_entry.start_time).seconds, 3600)
@@ -93,7 +95,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
         context['time_loggings'] = time_loggings;
 
-        if time_left :
+        if time_left:
             context['time_left'] = 1
 
             context['days_left'] = time_left.days
@@ -107,11 +109,11 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
 
         return context
 
-    def post(self,request,*args, **kwargs):
+    def post(self, request, *args, **kwargs):
         task = self.get_object()
 
         context = {
-            'task':task
+            'task': task
         }
         if request.method == 'POST':
             form = TimeEntryForm(request.POST)
@@ -338,7 +340,6 @@ class CreateTaskWizard(SessionWizardView):
 
         return kwargs
 
-
     def done(self, form_list, form_dict, **kwargs):
         """Saves the task using verified form information from both pages"""
 
@@ -352,6 +353,7 @@ class CreateTaskWizard(SessionWizardView):
         task.save()
         task.members.set(form_list[1].cleaned_data.get('members'))
         return HttpResponseRedirect(reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN))
+
 
 class TeamView(LoginRequiredMixin, FormView):
     """Allow logged-in users to create new teams"""
@@ -377,6 +379,7 @@ class TeamView(LoginRequiredMixin, FormView):
         messages.error(self.request, "Form submission failed. Please check the form for errors.")
         return super().form_invalid(form)
 
+
 class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style from 2023 to the current year + 5"""
     template_name = ('timeline.html')
@@ -388,6 +391,7 @@ class TimelineView(LoginRequiredMixin, TemplateView, RedirectView):
         html_calendar = calendar.returnHTMLPages()
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
+
 
 class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style for a given year"""
@@ -401,6 +405,7 @@ class TimelineYearView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
+
 class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
     """Displays tasks in a calendar style for a given month within a year"""
     template_name = ('timeline.html')
@@ -413,8 +418,8 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         context["timeline_calendar"] = mark_safe(html_calendar)
         return context
 
-class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
+class ModifyTaskView(LoginRequiredMixin, UpdateView):
     model = Task
     template_name = "modify_task.html"
     form_class = ModifyTaskForm
@@ -422,15 +427,15 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
         return task
-    
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
-    
+
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
-    
+
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
     """Allow users to delete tasks in task detail"""
@@ -442,6 +447,7 @@ class DeleteTaskView(LoginRequiredMixin, DeleteView):
         messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
         return reverse_lazy('task_list')
 
+
 class DeleteTeamView(LoginRequiredMixin, DeleteView):
     """Allow users to delete teams in team detail"""
     model = Team
@@ -451,7 +457,6 @@ class DeleteTeamView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Team Deleted Successfully")
         return reverse_lazy('team_list')
-
 
     def get_object(self, queryset=None):
         team_name = self.kwargs['team_name']
