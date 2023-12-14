@@ -313,6 +313,40 @@ class ModifyTaskForm(forms.ModelForm):
         return task
 
 
+class ModifyTaskMembersForm(forms.ModelForm):
+    add_members = forms.ModelMultipleChoiceField(
+        queryset=User.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    remove_members = forms.ModelMultipleChoiceField(
+        queryset=User.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ModifyTaskMembersForm, self).__init__(*args, **kwargs)
+
+        # Dynamically set the queryset for add_members and remove_members based on the team
+        if self.instance and self.instance.team:
+            team_members = self.instance.team.team_members.all()
+            assigned_members = self.instance.members.all()
+
+            # Set the queryset for add_members to team members not assigned to the task
+            self.fields['add_members'].queryset = team_members.exclude(id__in=assigned_members)
+
+            # Set the queryset for remove_members to members assigned to the task
+            self.fields['remove_members'].queryset = assigned_members
+
+    class Meta:
+        model = Task
+        fields = ['add_members', 'remove_members']
+
+class ReadAllNotificationsForm(forms.Form):
+    # This form can be empty since we just need it to trigger the form submission
+    pass
+
 class TimeEntryForm(forms.ModelForm):
     """Form to let users enter time"""
     class Meta:

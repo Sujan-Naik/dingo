@@ -93,8 +93,13 @@ class Notifications(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', default=1)
     message = models.TextField(max_length=100, blank=False)
     timestamp = models.DateTimeField(auto_now_add=True)
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=False)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-timestamp'] # Order by timestamp in descending order
 
+    def __str__(self):
+        return f'{self.sender} to {self.recipient}: {self.message}'
 
 class TimeLogging(models.Model):
     """record how many time a user spent on a task"""
@@ -118,6 +123,9 @@ class TimeLogging(models.Model):
             self.duration = self.end_time - self.start_time
             self.duration_minutes = self.duration.total_seconds() // 60
         super().save(*args, **kwargs)
+
+
+
 
 
 

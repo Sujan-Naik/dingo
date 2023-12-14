@@ -9,6 +9,12 @@
     </button>
     {% if user.is_authenticated %}
       {% include 'partials/menu.html' %}
+      <span class="navbar-text ms-auto">
+        <a href="{% url 'inbox' %}" class="btn btn-outline-light">
+          <i class="bi bi-inbox"></i> <!-- Bootstrap inbox icon -->
+        </a>
+        <!-- Add other profile icon here if needed -->
+      </span>
     {% endif %}
   </div>
 </nav>

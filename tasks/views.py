@@ -16,10 +16,9 @@ from django.views.generic import ListView, DetailView, TemplateView, RedirectVie
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
-from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, \
-    TaskSortForm, ModifyTaskForm, TimeEntryForm
+from tasks.forms import LogInForm, PasswordForm, UserForm, SignUpForm, CreateTaskForm1, CreateTaskForm2, TeamCreateForm, InviteMemberForm, TaskSortForm, ModifyTaskForm, TimeEntryForm, ModifyTaskMembersForm
 from tasks.helpers import login_prohibited
-from .models import Task, Team, User, TimeLogging
+from .models import Task, Team, User, TimeLogging, Notifications
 from .html_util.timeline import Timeline
 
 
@@ -207,6 +206,12 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
                         team.team_members.add(user)
+                        #Create a notification for the invited user
+                        Notifications.objects.create(
+                            recipient = user,
+                            sender = team.team_admin,
+                            message = f'You have been added to the team: {team.team_name}. ',
+                        )
                         messages.success(request, f'Successfully invite {user.username}.')
 
         elif action == 'remove':
@@ -215,6 +220,12 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
 
             if request.user == team.team_admin:
                 team.team_members.remove(user_to_remove)
+                # Create a notification for the removed user
+                Notifications.objects.create(
+                            recipient = user_to_remove,
+                            sender = team.team_admin,
+                            message = f'You have been removed from the team: {team.team_name}. ',
+                        )
                 messages.success(request, f'{user_to_remove.username} is removed from the team.')
             else:
                 messages.error(request, 'You do not have permission to remove member')
@@ -379,6 +390,14 @@ class CreateTaskWizard(SessionWizardView):
                     author=self.request.user, team=task_team)
         task.save()
         task.members.set(form_list[1].cleaned_data.get('members'))
+        team_members = task.members.all()
+        for member in team_members:
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'You have been assigned to a new task: {task.name}.',
+                task=task,
+            )
         return HttpResponseRedirect(reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN))
 
 class TeamView(LoginRequiredMixin, FormView):
@@ -397,6 +416,13 @@ class TeamView(LoginRequiredMixin, FormView):
         """Handle valid form by saving the new team."""
         if form.is_valid():
             form.save()
+            team = form.save()
+            for member in team.team_members.all():
+                Notifications.objects.create(
+                            recipient = member,
+                            sender = team.team_admin,
+                            message = f'You have been added to the team: {team.team_name}. ',
+                        )
             messages.success(self.request, "Team created!")
             return redirect('dashboard')
         return self.form_invalid(form)
@@ -442,7 +468,6 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
         return context
 
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
-
     model = Task
     template_name = "modify_task.html"
     form_class = ModifyTaskForm
@@ -450,25 +475,109 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         task = super().get_object(queryset=queryset)
         return task
-    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['modify_members_form'] = ModifyTaskMembersForm(instance=self.object)
+        return context
+
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        task = form.save(commit=False)
+
+        # Process the modify members form
+        modify_members_form = ModifyTaskMembersForm(
+            self.request.POST,
+            instance=task,
+            initial={'add_members': task.members.all(), 'remove_members': task.members.all()}
+        )
+
+        if modify_members_form.is_valid():
+            add_members = modify_members_form.cleaned_data.get('add_members')
+            remove_members = modify_members_form.cleaned_data.get('remove_members')
+
+            # Add new members
+            for member in add_members:
+                if member not in task.members.all():  # Check if the member is not already in the task
+                    task.members.add(member)
+
+                    # Notify added members about the assignment
+                    Notifications.objects.create(
+                        recipient=member,
+                        sender=self.request.user,
+                        message=f'You have been assigned to the task: {task.name}.',
+                    )
+
+            # Remove members
+            for member in remove_members:
+                if member in task.members.all():  # Check if the member is in the task
+                    task.members.remove(member)
+
+                    # Notify removed members about the removal
+                    Notifications.objects.create(
+                        recipient=member,
+                        sender=self.request.user,
+                        message=f'You have been removed from the task: {task.name}.',
+                    )
+
+        task.save()
+
+        # Notify team members about the modification
+        for member in task.members.all():
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'Task: {task.name} has been modified.',
+            )
+
         return super().form_valid(form)
-    
+
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "Task Updated Successfully")
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
     
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
-    """Allow users to delete tasks in task detail"""
     model = Task
     template_name = "tasks/delete.html"
     context_object_name = 'task'
+    success_url = reverse_lazy('task_list')
 
-    def get_success_url(self):
-        messages.add_message(self.request, messages.SUCCESS, "Task Deleted Successfully")
-        return reverse_lazy('task_list')
+    def form_valid(self, form):
+        # Notify assigned members before deleting the task
+        for member in self.object.members.all():
+            Notifications.objects.create(
+                recipient=member,
+                sender=self.request.user,
+                message=f'Task "{self.object.name}" has been deleted.',
+            )
+
+        # Perform the deletion
+        response = super().form_valid(form)
+
+    # Redirect to the success URL
+        messages.success(self.request, "Task Deleted Successfully")
+        return response
+
+
+class InboxPageView(ListView):
+    model = Notifications
+    template_name = 'inbox_page.html'
+    context_object_name = 'notifications'
+    ordering = ['-timestamp']
+
+    def get_queryset(self):
+        return self.model.objects.filter(recipient=self.request.user)
+    
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+
+        if action == 'read_all':
+            # Delete all notifications for the current user
+            Notifications.objects.filter(recipient=request.user).delete()
+            messages.success(request, 'All notifications have been marked as read.')
+
+        return HttpResponseRedirect(reverse_lazy('inbox'))
+
 
 class DeleteTeamView(LoginRequiredMixin, DeleteView):
     """Allow users to delete teams in team detail"""

@@ -43,5 +43,6 @@ urlpatterns = [
     path('timeline/', views.TimelineView.as_view(), name='timeline'),
     path('timeline/<int:year>/', views.TimelineYearView.as_view(), name='timeline_year'),
     path('timeline/<int:year>/<int:month>/', views.TimelineMonthView.as_view(), name='timeline_month'),
-    path('timezone', views.timezone_select, name='timezone')
+    path('timezone', views.timezone_select, name='timezone'),
+    path('Inbox', views.InboxPageView.as_view(), name='inbox'),
 ]
