@@ -72,10 +72,38 @@ class TaskListView(LoginRequiredMixin, ListView):
                 sort_by = form.cleaned_data.get("sort_by")
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
-            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user),**{filter_by:filter_string}).order_by(sort_by)
+            # return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user),**{filter_by:filter_string}).order_by(sort_by)
+            tasks = Task.objects.filter(
+                Q(members=self.request.user) | Q(author=self.request.user),
+                **{filter_by: filter_string}
+            ).order_by(sort_by)
+            """a set to avoid duplication"""
+            unique_task_identifiers = set()
+            unique_tasks = []
+            for task in tasks:
+                task_identifier = (
+                task.name, task.deadline, task.priority, task.team, task.author)
+                if task_identifier not in unique_task_identifiers:
+                    unique_tasks.append(task)
+                    unique_task_identifiers.add(task_identifier)
+
+            return unique_tasks
+
         else:
             # If sort criteria is malformed use default sort
-            return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
+            # return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
+            tasks = Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
+            """a set to avoid duplication"""
+            unique_task_identifiers = set()
+            unique_tasks = []
+            for task in tasks:
+                task_identifier = (
+                task.deadline, task.priority, task.team, task.author,task.name)
+                if task_identifier not in unique_task_identifiers:
+                    unique_tasks.append(task)
+                    unique_task_identifiers.add(task_identifier)
+
+            return unique_tasks
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
