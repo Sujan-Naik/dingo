@@ -19,8 +19,8 @@ user_fixtures = \
 class Command(BaseCommand):
     """Build automation command to seed the database."""
 
-    USER_COUNT = 150
-    TEAM_COUNT = 50
+    USER_COUNT = 300
+    TEAM_COUNT = 100
     TASKS_PER_TEAM = 300
     DEFAULT_PASSWORD = 'Password123'
     help = 'Seeds the database with sample data'
@@ -39,6 +39,8 @@ class Command(BaseCommand):
         self.create_users()
         self.users = User.objects.all()
 
+        """Following the seed requirements"""
+
         john = User.objects.get(username="@johndoe")
         jane = User.objects.get(username="@janedoe")
         charlie = User.objects.get(username="@charlie")
@@ -47,7 +49,6 @@ class Command(BaseCommand):
         self.generated_users.append(jane)
         self.generated_users.append(charlie)
 
-        # team_name = self.faker.company()
         team_members = [john, jane, charlie]
         team_admin = john
 
@@ -58,16 +59,14 @@ class Command(BaseCommand):
                 "admin": team_admin
             })
 
+        """Generate 400 random tasks for the team"""
+
         for i in range(400):
             task_member_size = randint(2, 3)
             self.generate_task(john, new_team, task_member_size)
             self.generate_task(jane, new_team, task_member_size)
-        # self.try_create_team({'name': team_name, 'members': team_members, 'admin': team_admin})
 
-        length = len(self.generated_users)
-        print(f"GEN SIZE: {length}")
         self.generate_random_teams()
-        print(f"GEN SIZE: {len(self.generated_teams)}")
         self.generate_random_tasks()
 
     def create_users(self):
@@ -87,7 +86,7 @@ class Command(BaseCommand):
 
         user_count = User.objects.count()
         while user_count < self.USER_COUNT:
-            print(f"Seeding user {user_count}/{self.USER_COUNT}")
+            print(f"Seeding user {user_count}/{self.USER_COUNT}", end='\r')
             user = self.generate_user()
             user_count = User.objects.count()
             self.generated_users.append(user)
@@ -97,32 +96,34 @@ class Command(BaseCommand):
         """Generates random teams"""
 
         team_count = Team.objects.count()
+
         """Prevent charlie from being a team leader"""
+
         charlie = User.objects.get(username="@charlie")
         self.generated_users.remove(charlie)
         team_leaders = sample(self.generated_users, self.TEAM_COUNT)
         self.generated_users.append(charlie)
         counter = 0
-        print("above while")
+
         while team_count < self.TEAM_COUNT:
-            print(f"COUNTER: {counter}      ")
-            print(f"Seeding team {team_count}/{self.TEAM_COUNT}")
+            print(f"Seeding team {team_count}/{self.TEAM_COUNT}", end='\r')
             new_team = self.generate_team(team_leaders[counter])
             self.generated_teams.append(new_team)
             team_count = Team.objects.count()
             counter += 1
+
         print("Team seeding complete.      ")
 
     def generate_random_tasks(self):
         """Creates random tasks for each generated team"""
 
         for team in self.generated_teams:
-            team_leaders = sample(self.generated_users, self.TEAM_COUNT)
+
             counter = 0
-            print("above while")
+
             while counter < self.TASKS_PER_TEAM:
-                print(f"COUNTER: {counter}      ")
-                print(f"Seeding task {Task.objects.count()}")
+
+                print(f"Seeding task {Task.objects.count()}", end='\r')
                 member_index = randint(0, team.team_members.count() - 1)
                 author = team.team_members.all()[member_index]
                 self.generate_task(author, team)
@@ -137,6 +138,7 @@ class Command(BaseCommand):
         last_name = self.faker.last_name()
         email = create_email(first_name, last_name)
         username = create_username(first_name, last_name)
+
         user = self.try_create_user(
             {
                 'username': username,
@@ -144,6 +146,7 @@ class Command(BaseCommand):
                 'first_name': first_name,
                 'last_name': last_name
             })
+
         return user
 
     def generate_task(self, author, team, task_members_size=None):
@@ -155,7 +158,7 @@ class Command(BaseCommand):
         end_date = end_date.replace(tzinfo=timezone.utc)
         deadline = self.faker.future_datetime(end_date=end_date)
         deadline = deadline.replace(tzinfo=timezone.utc)
-        # 1 to 5
+        """ 1 to 5 """
         priority = randint(1, 5)
 
         if task_members_size is None:
@@ -176,11 +179,13 @@ class Command(BaseCommand):
             })
 
     def generate_team(self, admin):
+        """Generates random data for a team"""
+
         name = self.faker.company()
+        """Team size is between 25 and 50 members"""
         team_size = randint(25, 50)
         members = sample(self.generated_users, team_size - 1)
         members.append(admin)
-        # len(self.generated_users)
 
         team = self.try_create_team(
             {
@@ -192,6 +197,8 @@ class Command(BaseCommand):
         return team
 
     def try_create_user(self, data):
+        """Tries to create a new user"""
+
         try:
             user = self.create_user(data)
             return user
@@ -199,20 +206,27 @@ class Command(BaseCommand):
             pass
 
     def try_create_team(self, data):
-        return self.create_team(data)
-        # try:
-        # self.create_team(data)
-        # except:
-        # pass
+        """Tries to create a new team"""
+
+        try:
+            team = self.create_team(data)
+            return team
+        except:
+            pass
 
     def try_create_task(self, data):
-        self.create_task(data)
-        ##try:
-        #  #self.create_task(data)
-        # except:
-        # pass
+        """Tries to create a new task"""
+
+        try:
+            task = self.create_task(data)
+            return task
+        except:
+            pass
+
 
     def create_user(self, data):
+        """Creates a new user using the specified data"""
+
         user = User.objects.create_user(
             username=data['username'],
             email=data['email'],
@@ -223,15 +237,22 @@ class Command(BaseCommand):
         return user
 
     def create_team(self, data):
+        """Creates a new team using the specified data"""
+
         team = Team(
             team_name=data['name'],
             team_admin=data['admin'],
         )
         team.save()
+
+        """Assign team members after saving"""
         team.team_members.set(data['members'])
+
         return team
 
     def create_task(self, data):
+        """Creates a new task using the specified data"""
+
         task = Task(
             name=data['name'],
             description=data['description'],
@@ -242,12 +263,16 @@ class Command(BaseCommand):
         )
 
         task.save()
+
+        """Assign task members after saving"""
         task.members.set(data['members'])
 
 
 def create_username(first_name, last_name):
+    """Creates a username using the name"""
     return '@' + first_name.lower() + last_name.lower()
 
 
 def create_email(first_name, last_name):
+    """Creates an email using the name"""
     return first_name + '.' + last_name + '@example.org'
