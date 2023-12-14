@@ -72,7 +72,7 @@ class TaskListView(LoginRequiredMixin, ListView):
                 sort_by = form.cleaned_data.get("sort_by")
             filter_by = self.request.GET.get("filter_by") + "__icontains"
             filter_string = self.request.GET.get("filter_string", "")
-            # return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user),**{filter_by:filter_string}).order_by(sort_by)
+
             tasks = Task.objects.filter(
                 Q(members=self.request.user) | Q(author=self.request.user),
                 **{filter_by: filter_string}
@@ -91,7 +91,7 @@ class TaskListView(LoginRequiredMixin, ListView):
 
         else:
             # If sort criteria is malformed use default sort
-            # return Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
+
             tasks = Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
             """a set to avoid duplication"""
             unique_task_identifiers = set()
