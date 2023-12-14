@@ -77,7 +77,7 @@ class TaskListView(LoginRequiredMixin, ListView):
                 Q(members=self.request.user) | Q(author=self.request.user),
                 **{filter_by: filter_string}
             ).order_by(sort_by)
-            """a set to avoid duplication"""
+            # a set to avoid duplication
             unique_task_identifiers = set()
             unique_tasks = []
             for task in tasks:
@@ -93,7 +93,7 @@ class TaskListView(LoginRequiredMixin, ListView):
             # If sort criteria is malformed use default sort
 
             tasks = Task.objects.filter(Q(members=self.request.user) | Q(author=self.request.user)).order_by("deadline")
-            """a set to avoid duplication"""
+            # a set to avoid duplication
             unique_task_identifiers = set()
             unique_tasks = []
             for task in tasks:
@@ -228,12 +228,13 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
                 for username in users_to_invite:
                     user = User.objects.get(username=username)
 
-                    """ check if the user is already in the team"""
+                    #  check if the user is already in the team
 
                     if user in team.team_members.all():
                         messages.error(request, f'{user.username} is already in the team.')
                     else:
                         team.team_members.add(user)
+
                         #Create a notification for the invited user
                         Notifications.objects.create(
                             recipient = user,
