@@ -7,12 +7,14 @@ from faker import Faker
 from random import randint, random, sample
 from datetime import datetime
 from django.utils import timezone
+from .unseed import Command as Unseed
 
 user_fixtures = \
     [
         {'username': '@johndoe', 'email': 'john.doe@example.org', 'first_name': 'John', 'last_name': 'Doe'},
         {'username': '@janedoe', 'email': 'jane.doe@example.org', 'first_name': 'Jane', 'last_name': 'Doe'},
-        {'username': '@charlie', 'email': 'charlie.johnson@example.org', 'first_name': 'Charlie', 'last_name': 'Johnson'},
+        {'username': '@charlie', 'email': 'charlie.johnson@example.org', 'first_name': 'Charlie',
+         'last_name': 'Johnson'},
     ]
 
 
@@ -34,7 +36,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Executes when seed command is called"""
 
-        User.objects.filter(is_staff=False).delete()
+        """Unseed first"""
+
+        unseed = Unseed
+        unseed.handle(self)
 
         self.create_users()
         self.users = User.objects.all()
@@ -44,6 +49,12 @@ class Command(BaseCommand):
         john = User.objects.get(username="@johndoe")
         jane = User.objects.get(username="@janedoe")
         charlie = User.objects.get(username="@charlie")
+
+        """Set johndoe as an admin"""
+        set_as_admin(john)
+
+        """Set janedoe as an admin"""
+        set_as_admin(jane)
 
         self.generated_users.append(john)
         self.generated_users.append(jane)
@@ -225,7 +236,6 @@ class Command(BaseCommand):
         except:
             pass
 
-
     def create_user(self, data):
         """Creates a new user using the specified data"""
 
@@ -278,3 +288,13 @@ def create_username(first_name, last_name):
 def create_email(first_name, last_name):
     """Creates an email using the name"""
     return first_name + '.' + last_name + '@example.org'
+
+
+def set_as_admin(user):
+    """Sets the user as an admin"""
+
+    user.is_staff = True
+    user.is_admin = True
+    user.is_superuser = True
+
+    user.save()
