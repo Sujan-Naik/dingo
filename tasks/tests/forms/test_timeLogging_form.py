@@ -7,7 +7,7 @@ from tasks.models import TimeLogging
 class TimeEntryFormTest(TestCase):
 
     def test_valid_time_entry_form(self):
-        # Create data for a valid time entry form
+        """test for a valid time entry form"""
         current_time = timezone.now()
         form_data = {
             'start_time': current_time,
@@ -20,7 +20,7 @@ class TimeEntryFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_invalid_time_entry_form(self):
-        # Create data for an invalid time entry form (end_time before start_time)
+        """test for an invalid time entry form (end_time before start_time)"""
         current_time = timezone.now()
         form_data = {
             'start_time': current_time,

@@ -13,11 +13,12 @@ class TimeLoggingModelTest(TestCase):
     ]
 
     def setUp(self):
-        # Create a user and a task for testing
+        """set up the default data"""
         self.user = User.objects.get(username='@johndoe')
         self.task = Task.objects.get(name='Testing')
 
     def test_valid_time_logging_entry(self):
+        """test if the time logging is valid"""
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=2)
 
@@ -33,6 +34,7 @@ class TimeLoggingModelTest(TestCase):
         self.assertEqual(time_logging.duration_minutes, (end_time - start_time).total_seconds() // 60)
 
     def test_invalid_time_logging_entry(self):
+        """test if the time logging is invalid"""
         # Try to create an invalid TimeLogging entry (end_time before start_time)
         start_time = timezone.now()
         end_time = start_time - timezone.timedelta(hours=2)
@@ -47,6 +49,7 @@ class TimeLoggingModelTest(TestCase):
 
 
     def test_duration_calculation(self):
+        """test if the duration calculate correctly"""
         # Create a TimeLogging entry with start_time and end_time
         start_time = timezone.now()
         end_time = start_time + timezone.timedelta(hours=2)

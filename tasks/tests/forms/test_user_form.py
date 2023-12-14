@@ -20,6 +20,7 @@ class UserFormTestCase(TestCase):
         }
 
     def test_form_has_necessary_fields(self):
+        """check the fields of user form"""
         form = UserForm()
         self.assertIn('first_name', form.fields)
         self.assertIn('last_name', form.fields)
@@ -29,15 +30,18 @@ class UserFormTestCase(TestCase):
         self.assertTrue(isinstance(email_field, forms.EmailField))
 
     def test_valid_user_form(self):
+        """check if user form is valid"""
         form = UserForm(data=self.form_input)
         self.assertTrue(form.is_valid())
 
     def test_form_uses_model_validation(self):
+        """test for the validation"""
         self.form_input['username'] = 'badusername'
         form = UserForm(data=self.form_input)
         self.assertFalse(form.is_valid())
 
     def test_form_must_save_correctly(self):
+        """test the save method"""
         user = User.objects.get(username='@johndoe')
         form = UserForm(instance=user, data=self.form_input)
         before_count = User.objects.count()

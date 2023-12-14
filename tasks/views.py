@@ -507,6 +507,7 @@ class TimelineMonthView(LoginRequiredMixin, TemplateView, RedirectView):
 
 
 class ModifyTaskView(LoginRequiredMixin, UpdateView):
+    """a view to modify task"""
 
     model = Task
     template_name = "modify_task.html"
@@ -577,6 +578,7 @@ class ModifyTaskView(LoginRequiredMixin, UpdateView):
 
 
 class DeleteTaskView(LoginRequiredMixin, DeleteView):
+    """view to delete task"""
     model = Task
     template_name = "tasks/delete.html"
     context_object_name = 'task'

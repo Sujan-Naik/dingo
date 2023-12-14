@@ -89,6 +89,7 @@ class Task(models.Model):
     
 
 class Notifications(models.Model):
+    """generate notifications when a user is invited"""
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_receieved')
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', default=1)
     message = models.TextField(max_length=100, blank=False)

@@ -13,7 +13,7 @@ class InviteMemberFormTest(TestCase):
     ]
 
     def setUp(self):
-        # Create a dictionary with valid form data
+        """ set up the initial data"""
         self.user = User.objects.get(username='@johndoe')
         self.form_input = {
             'team_name': 'TestTeam',
@@ -28,6 +28,7 @@ class InviteMemberFormTest(TestCase):
         self.client.login(username='@johndoe', password='Password123')
 
     def test_invite_member_form_valid(self):
+        """test if the invite form is valid"""
         # Instantiate the form with the provided data
         form = InviteMemberForm(data=self.form_input)
 
@@ -39,6 +40,7 @@ class InviteMemberFormTest(TestCase):
         self.assertEqual(new_team.team_name, 'TestTeam')
 
     def test_invite_member_form_invalid(self):
+        """test if the invite form is invalid"""
         # Create a dictionary with invalid form data
         invalid_form_data = {
             'team_name': 'invalid_name',

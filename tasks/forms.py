@@ -262,6 +262,7 @@ class TeamCreateForm(forms.ModelForm):
 
 
 class InviteMemberForm(forms.ModelForm):
+    """form to invite users"""
     class Meta:
         model = Team
         fields = ['team_name']
@@ -290,6 +291,7 @@ class TaskSortForm(forms.Form):
 
 
 class ModifyTaskForm(forms.ModelForm):
+    """form to modify task"""
     class Meta:
         model = Task
         fields = ['name', 'description', 'deadline', 'priority']
@@ -314,6 +316,7 @@ class ModifyTaskForm(forms.ModelForm):
 
 
 class ModifyTaskMembersForm(forms.ModelForm):
+    """form to modify task members"""
     add_members = forms.ModelMultipleChoiceField(
         queryset=User.objects.none(),
         required=False,

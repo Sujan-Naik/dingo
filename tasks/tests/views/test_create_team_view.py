@@ -63,7 +63,7 @@ class TeamViewTest(TestCase):
 
 
     def test_team_view_post_invalid_form(self):
-        # Create a team with the same name to make the form invalid
+        """ Create a team with the same name to make the form invalid"""
         Team.objects.create(team_name='TestTeam').team_members.set([self.user.id])
 
         team_data = {
