@@ -17,17 +17,8 @@
       <button>Delete Team</button>
     </a>
   </div>
-
-  <p><strong>Tasks belonging to this team: </strong></p>
-  {% if no_task %}
-      <p>No tasks in this team.</p>
-  {% else %}
-  {% for task in team_task %}
-  <p><strong><a href="{% url 'task_detail' task.id %}"> {{ task.name}}</a></strong></p>
-  {% endfor %}
-  {% endif %}
-
         {% if user == team.team_admin %}
+  <br>
         <h3>Manage Team Members:</h3>
 
           <form method="post" action="{% url 'team_detail' team_name=team.team_name %}">
@@ -56,5 +47,16 @@
     </form>
 
   {% endif %}
+  <br>
+  <h3>Tasks belonging to this team: </h3>
+  {% if no_task %}
+      <p>No tasks in this team.</p>
+  {% else %}
+  {% for task in team_task %}
+  <p><strong><a href="{% url 'task_detail' task.id %}"> {{ task.name}}</a></strong></p>
+  {% endfor %}
+  {% endif %}
+
+
 </div>
 {% endblock %}
