@@ -1,17 +1,44 @@
-# Team Dingo Small Group project
+# Task Manager  
+*An interactive task-management tool by Team Dingo*
+
+View a populated web demo at https://sujannaik.pythonanywhere.com/ 
+- Use the account username: '@Sujan' and password '@Sujan123' to avoid signing up. 
 
 ## Team members
-The members of the team are:
 - Omer Mohamed Osman Hussain
 - Tanvir Singh Sahota 
 - George Taylor
 - Siqi Li 
 - Sujan Naik
 
-## Project structure
+## What is this ?
+> An intuitive and minimalistic web-application for team based project management developed using the [Django Web Framework](https://www.djangoproject.com/)
+
+### Features
+> Users can create accounts, log in, and manage their profiles.
+
+> Users can form teams, and invite team members to their team.
+
+> Each user can create tasks, assign tasks to other team members, and set due dates.
+
+> Users provide a dashboard to view and manage assigned tasks, and team tasks.
+
+> Enable users to search, order and filter tasks.  These could be based on name, completion status, priority, due date ranges, assigned developer, or team/project.
+
+> Add a priority system for tasks, allowing users to assign priority levels and filter tasks based on priority.  Include automated reminders for high-priority tasks nearing their due dates.
+
+> Time tracking feature for tasks, allowing users to log time spent on each task.  Provide summary reports of time spent on tasks over different periods.
+
+> Notification system to alert users about task assignments and upcoming due dates.
+
+
+## Developer instructions
+
+
+### Project structure
 The project is called `task_manager`.  It currently consists of a single app `tasks`.
 
-## Installation instructions
+### Installation instructions
 To install the software and use it in your local development environment, you must first set up and activate a local development environment.  From the root of the project:
 
 ```
@@ -42,9 +69,6 @@ Run all tests with:
 $ python3 manage.py test
 ```
 
-*The above instructions should work in your version of the application.  If there are deviations, declare those here in bold.  Otherwise, remove this line.*
-
-## Sources
+### Sources
 The packages used by this application are specified in `requirements.txt`
 
-*Declare are other sources here, and remove this line*
