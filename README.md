@@ -31,6 +31,35 @@ View a populated web demo at https://sujannaik.pythonanywhere.com/
 
 > Notification system to alert users about task assignments and upcoming due dates.
 
+### Media
+## The Home Screen
+![Home screen](https://github.com/Sujan-Naik/dingo/assets/125016948/0f86c58b-35d5-4d30-b152-3161ae01aed1)
+
+## The tasks view
+![Tasks](https://github.com/Sujan-Naik/dingo/assets/125016948/36c2b4a7-5022-46fa-ba6a-a1cba7b11ca1)
+
+## Viewing an individual task
+![Task view](https://github.com/Sujan-Naik/dingo/assets/125016948/3b8e4fe8-520a-40bc-8ed0-9d3fb839fab2)
+
+## Modifying a task
+![Modify task](https://github.com/Sujan-Naik/dingo/assets/125016948/190fe861-1ef2-48b4-a2c7-e13b6ef06846)
+
+## Creating a task
+![Create task](https://github.com/Sujan-Naik/dingo/assets/125016948/bb48ad94-0094-4d88-bc6b-2a38c0f6a6f1)
+
+## Viewing a team
+![Team view](https://github.com/Sujan-Naik/dingo/assets/125016948/2abd5617-9dec-45a6-83f3-4d91b6c32315)
+
+## Creating a team
+![Create team](https://github.com/Sujan-Naik/dingo/assets/125016948/d6af72df-1003-401c-85d0-b17827113583)
+
+## A calendar view
+![Calendar view](https://github.com/Sujan-Naik/dingo/assets/125016948/0e1f91cf-805f-475e-8361-f6fa7c2b7ae0)
+
+
+
+
+
 
 ## Developer instructions
 
