@@ -13,7 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
-
+from dotenv import load_dotenv
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -85,15 +86,30 @@ DATABASES = {
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
 
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'mydb',
+    #     'USER': 'myuser',
+    #     'PASSWORD': 'mypass',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
+
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb',
-        'USER': 'myuser',
-        'PASSWORD': 'mypass',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DATABASE', 'postgres'),  # Default to 'mydb' if the env variable is not set
+        'USER': os.environ.get('POSTGRES_USER', 'myuser'),     # Default to 'myuser'
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mypass'), # Default to 'mypass'
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),   # Default to 'localhost'
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),        # Default to '5432'
     }
 }
+
+print("Database Name:", os.environ.get('POSTGRES_DATABASE'))
+print("Database User:", os.environ.get('POSTGRES_USER'))
+print("Database Password:", os.environ.get('POSTGRES_PASSWORD'))
+print("Database Host:", os.environ.get('POSTGRES_HOST'))
+print("Database Port:", os.environ.get('POSTGRES_PORT'))
 
 
 # Password validation
