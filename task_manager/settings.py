@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tasks.middleware.TimezoneMiddleware',
+    'tasks.middleware.AllowIframeMiddleware'
 ]
 
 ROOT_URLCONF = 'task_manager.urls'

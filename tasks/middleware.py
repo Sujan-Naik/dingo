@@ -19,3 +19,12 @@ class TimezoneMiddleware:
         else:
             timezone.deactivate()
         return self.get_response(request)
+
+# myapp/middleware.py
+
+from django.utils.deprecation import MiddlewareMixin
+
+class AllowIframeMiddleware(MiddlewareMixin):
+    def process_response(self, request, response):
+        response['X-Frame-Options'] = 'ALLOWALL'  # Or specify your allowed origin(s)
+        return response
