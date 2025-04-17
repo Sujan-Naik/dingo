@@ -102,6 +102,11 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mypass'), # Default to 'mypass'
         'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),   # Default to 'localhost'
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),        # Default to '5432'
+        'OPTIONS': {
+            'connect_timeout': 10,  # Optional: Set a connection timeout
+            'sslmode': 'require',     # Ensure SSL is required
+            'host': '127.0.0.1',      # Force IPv4
+        },
     }
 }
 
