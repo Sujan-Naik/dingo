@@ -1,20 +1,12 @@
-# Team Dingo Small Group project
+# Task Manager
+**By Team Dingo**
 
-## Team members
-The members of the team are:
-- Omer Mohamed Osman Hussain
-- Tanvir Singh Sahota 
-- George Taylor
-- Siqi Li 
-- Sujan Naik
+Provides an intuitive task management system which supports teams, intended for use within an organisation.
+Built using the Django Web Framework, and a PostgreSQL database.
 
-## Project structure
-The project is called `task_manager`.  It currently consists of a single app `tasks`.
+Deployed using Vercel and Supabase as a backend [https://dingo-topaz.vercel.app/](https://dingo-topaz.vercel.app/).
 
-## Deployed version of the application
-The deployed version of the application can be found at [http://siqili.pythonanywhere.com/](http://siqili.pythonanywhere.com/).
-The link to the administrative interface of the application can be  found at [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/).
-
+# Developer Instructions
 ## Installation instructions
 To install the software and use it in your local development environment, you must first set up and activate a local development environment.  From the root of the project:
 
@@ -52,3 +44,12 @@ $ python3 manage.py test
 The packages used by this application are specified in `requirements.txt`
 
 *Declare are other sources here, and remove this line*
+
+
+## Team members
+The members of the team are:
+- Omer Mohamed Osman Hussain
+- Tanvir Singh Sahota 
+- George Taylor
+- Siqi Li 
+- Sujan Naik
