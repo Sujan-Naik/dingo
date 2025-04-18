@@ -56,6 +56,8 @@ MIDDLEWARE = [
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://sujan-naik.github.io']
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'task_manager.urls'
 
