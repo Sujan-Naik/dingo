@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d1ca93d-ef4e-4192-844d-76615114c4bd" name="Changes" comment="Attempt to allow iframe" />
+    <list default="true" id="6d1ca93d-ef4e-4192-844d-76615114c4bd" name="Changes" comment="Add CSRF cookie samesite none">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -257,6 +259,7 @@
       <workItem from="1744822081430" duration="4403000" />
       <workItem from="1744879822995" duration="3951000" />
       <workItem from="1744911654811" duration="343000" />
+      <workItem from="1744966490621" duration="2377000" />
     </task>
     <task id="LOCAL-00001" summary="Implement timeline to view tasks">
       <option name="closed" value="true" />
@@ -458,7 +461,23 @@
       <option name="project" value="LOCAL" />
       <updated>1744911887364</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Attempt to allow CSRF verification from portfolio website embed">
+      <option name="closed" value="true" />
+      <created>1744966726882</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1744966726882</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Add CSRF cookie samesite none">
+      <option name="closed" value="true" />
+      <created>1744966984229</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1744966984229</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -532,7 +551,9 @@
     <MESSAGE value="Attempt to force ipv4" />
     <MESSAGE value="Update README.md" />
     <MESSAGE value="Attempt to allow iframe" />
-    <option name="LAST_COMMIT_MESSAGE" value="Attempt to allow iframe" />
+    <MESSAGE value="Attempt to allow CSRF verification from portfolio website embed" />
+    <MESSAGE value="Add CSRF cookie samesite none" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add CSRF cookie samesite none" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/dingo$Test__tasks_tests_models_test_task_model_TaskModelTestCase_test_dependencies_is_type_task.coverage" NAME="Test: tasks.tests.models.test_task_model.TaskModelTestCase.test_dependencies_is_type_task Coverage Results" MODIFIED="1702245088459" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
