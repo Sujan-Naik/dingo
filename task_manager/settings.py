@@ -31,7 +31,6 @@ DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", ".vercel.app", ".now.sh"]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,6 +54,8 @@ MIDDLEWARE = [
     'tasks.middleware.TimezoneMiddleware',
     'tasks.middleware.AllowIframeMiddleware'
 ]
+
+CSRF_TRUSTED_ORIGINS = ['https://sujan-naik.github.io']
 
 ROOT_URLCONF = 'task_manager.urls'
 
