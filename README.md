@@ -4,7 +4,7 @@
 Provides an intuitive task management system which supports teams, intended for use within an organisation.
 Built using the Django Web Framework, and a PostgreSQL database.
 
-Deployed using Vercel and Supabase as a backend [https://dingo-topaz.vercel.app/](https://dingo-topaz.vercel.app/).
+Deployed using Vercel and Supabase as a database [https://dingo-topaz.vercel.app/](https://dingo-topaz.vercel.app/).
 
 # Developer Instructions
 ## Installation instructions
