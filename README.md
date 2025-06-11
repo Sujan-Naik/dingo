@@ -5,6 +5,8 @@ Provides an intuitive task management system which supports teams, intended for 
 Built using the Django Web Framework, and a PostgreSQL database.
 
 Deployed using Vercel and Supabase as a database [https://dingo-topaz.vercel.app/](https://dingo-topaz.vercel.app/).
+Try the Username '@Sujan' and password 'pass'
+
 ![Home screen](https://github.com/user-attachments/assets/63656ef1-9120-46bc-aafa-2f9d4c24d627)
 ![Calendar view](https://github.com/user-attachments/assets/6b723be9-77a0-4226-b9c2-3c06e8db6292)
 ![Create task](https://github.com/user-attachments/assets/4ebd2064-5481-46b0-ad9e-2f306786b9f2)
